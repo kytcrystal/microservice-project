@@ -7,7 +7,6 @@
 ### Create new aparment
 
 POST http://{{apartment_service_url}}/api/apartments
-
 Content-Type: application/json
 
 {

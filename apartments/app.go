@@ -1,6 +1,7 @@
-package main
+package apartments
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -8,25 +9,41 @@ import (
 	"os"
 )
 
+type Apartment struct {
+	Name    string
+	Address string
+}
+
 func getRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
 	io.WriteString(w, "This is my website!\n")
 }
+
 func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("got /api/apartments GET request\n")
-		io.WriteString(w, "These are all the apartments!\n")
+		w.Header().Set("Content-Type", "application/json")
+		allApartments := ListAllApartments()
+		json.NewEncoder(w).Encode(&allApartments)
 	case http.MethodPost:
+		var apartment Apartment
+		err := json.NewDecoder(r.Body).Decode(&apartment)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
 		fmt.Printf("got /api/apartments POST request\n")
-		io.WriteString(w, "New apartment to add!\n")
+		SaveApartment(apartment)
+		json.NewEncoder(w).Encode(&apartment)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-func main() {
+func StartApp() {
 	http.HandleFunc("/", getRoot)
 	http.HandleFunc("/api/apartments", apartmentsHandler)
 
