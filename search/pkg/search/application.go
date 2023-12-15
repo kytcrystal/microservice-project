@@ -1,7 +1,6 @@
 package search
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,46 +22,37 @@ func NewApplication() Application {
 func (a *Application) Run() error {
 	log.Println("Starting Search Application")
 
-	// TODO: make this configurable via env variable so it's easy to Dockerize the app
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	publisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING, APARTMENTS_QUEUE_NAME)
+	if err != nil {
+		return fmt.Errorf("failed to create rabbit mq publisher: %w", err)
+	}
+	defer publisher.Close()
+
+	message := SampleMessage{ID: "123", Number: 123, CreatedAt: time.Now()}
+	if err := publisher.SendMessage(message); err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+
+	conn, err := amqp.Dial(RABBIT_MQ_CONNECTION_STRING)
 	if err != nil {
 		return fmt.Errorf("failed to create rabbit mq connection: %w", err)
 	}
-	//TODO: when stop the app we should close the connection
 
 	channel, err := conn.Channel()
 	if err != nil {
 		return fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
-	//TODO: we should also close the channel later on
 
 	queue, err := channel.QueueDeclare(
-		"apparments-queue", // name
-		false,              // durable
-		false,              // delete when unused
-		false,              // exclusive
-		false,              // no-wait
-		nil,                // arguments
+		APARTMENTS_QUEUE_NAME, // name
+		false,                 // durable
+		false,                 // delete when unused
+		false,                 // exclusive
+		false,                 // no-wait
+		nil,                   // arguments
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create new queue: %v", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = channel.PublishWithContext(ctx,
-		"",         // exchange
-		queue.Name, // routing key
-		false,      // mandatory
-		false,      // immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        toJsonBytes(SampleMessage{ID: "123", Number: 123, CreatedAt: time.Now()}),
-		})
-
-	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
 	}
 
 	// Just as a simple example let's try to set up the listener as well
