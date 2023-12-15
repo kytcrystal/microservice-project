@@ -1,5 +1,19 @@
 # microservice-project
 
+## Overview
+
+![Overview of the Project](./img/01-first-version-of-the-project.png)
+
+## TODOs
+
+- [ ] Implement HTTP endpoints in appartment service that just accept requests as per sample file
+- [ ] Implement HTTP endpoints in booking service
+  - [ ] we can try to check if an appartment exist before allowing a booking (direct communication with the other service)
+- [ ] Connect apartment service to a database
+- [ ] When a new appartment is created appartment service sends a rabbit mq message, booking service listen and create the appartment in it's own DB too;
+- [ ] Add search service with similar approach
+- [ ] Dockerize everything
+
 ## Requirements
 
 - Go: 1.21.4

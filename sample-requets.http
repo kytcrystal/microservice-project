@@ -16,17 +16,23 @@ Content-Type: application/json
     "floor": "1"
 }
 
-### Search all apartments in apartments service
+### Search all apartments in apartments service (debug endpoint)
 
 GET http://{{apartment_service_url}}/api/apartments
 
 
+### Get all bookings from booking service (debug endpoint)
+
+GET http://${{{{booking_service_url}}}}/api/bookings
+
 ### Create a booking
 
-POST http://{{booking_service_url}}/api/booking
+
+POST http://{{booking_service_url}}/api/bookings
 
 {
     "apartmentID": 1,
+    "userID": 123,
     "startDate": "2023-12-01",
     "toDate": "2023-12-30"
 }
