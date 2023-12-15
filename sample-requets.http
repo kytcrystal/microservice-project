@@ -1,0 +1,36 @@
+@appartment_service_url = localhost:3000
+@booking_service_url = localhost:3001
+@search_service_url = localhost:3002
+
+
+
+### Create new apparment
+
+POST http://${{appartment_service_url}}/api/appartments
+
+Content-Type: application/json
+
+{
+    "name": "Hotl ABC", 
+    "address": "Via Abc, 123"
+}
+
+### Search all appartments in appartments service
+
+GET http://${{appartment_service_url}}/api/appartments
+
+
+### Create a booking
+
+POST http://${{{{booking_service_url}}}}/api/booking
+
+{
+    "appartmentID": 1,
+    "startDate": "2023-12-01",
+    "toDate": "2023-12-30"
+}
+
+
+### Search free appartments in search service
+
+GET http://${{{search_service_url}}}/api/appartments/available?from=2023-01-02&to=2023-01-05
