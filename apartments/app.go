@@ -9,11 +9,6 @@ import (
 	"os"
 )
 
-type Apartment struct {
-	Name    string
-	Address string
-}
-
 func getRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
 	io.WriteString(w, "This is my website!\n")

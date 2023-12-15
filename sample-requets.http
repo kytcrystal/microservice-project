@@ -4,14 +4,16 @@
 
 
 
-### Create new aparment
+### Create new apartment
 
 POST http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "name": "Hotel ABC", 
-    "address": "Via Abc, 123"
+    "apartment_name": "Maybe White", 
+    "address": "Trento",
+    "noise_level": "5",
+    "floor": "1"
 }
 
 ### Search all apartments in apartments service
@@ -24,7 +26,7 @@ GET http://{{apartment_service_url}}/api/apartments
 POST http://{{booking_service_url}}/api/booking
 
 {
-    "appartmentID": 1,
+    "apartmentID": 1,
     "startDate": "2023-12-01",
     "toDate": "2023-12-30"
 }
