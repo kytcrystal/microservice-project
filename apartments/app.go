@@ -31,7 +31,7 @@ func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Printf("got /api/apartments POST request\n")
-		SaveApartment(apartment)
+		apartment = SaveApartment(apartment)
 		json.NewEncoder(w).Encode(&apartment)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

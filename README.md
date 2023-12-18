@@ -23,3 +23,11 @@
 ## Useful Resources
 
 - [Diagram in Visio](https://scientificnet-my.sharepoint.com/:u:/r/personal/mponza_unibz_it/Documents/CPD%20-%20Microservices%20Project.vsdx?d=w6328c77940f14158bfbf177a6352d738&csf=1&web=1&e=2ctcRj)
+
+
+Questions
+- Why when i query "http://localhost:3000/api/apartments" in webpage, in console, it is printed both
+    got /api/apartments GET request
+    got / request
+- How do i add the post request body into the URL?
+- 
