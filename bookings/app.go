@@ -53,6 +53,18 @@ func bookingsHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		listOfBookings = CancelBooking(body.BookingID)
 		json.NewEncoder(w).Encode(&body)
+	case http.MethodPatch:
+		fmt.Printf("got /api/bookings PATCH request\n")
+		var booking Booking
+		err := json.NewDecoder(r.Body).Decode(&booking)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		fmt.Println("here")
+		w.Header().Set("Content-Type", "application/json")
+		ChangeBooking(booking)
+		json.NewEncoder(w).Encode(&booking)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -79,4 +91,10 @@ func CancelBooking(bookingID string) []Booking {
 
 func remove(listOfBookings []Booking, i int) []Booking {
 	return append(listOfBookings[:i], listOfBookings[i+1:]...)
+}
+
+func ChangeBooking(booking Booking) []Booking{
+	listOfBookings = CancelBooking(booking.BookingID)
+	newBooking := CreateBooking(booking)
+	return append(listOfBookings, newBooking)
 }

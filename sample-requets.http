@@ -40,14 +40,27 @@ GET http://{{booking_service_url}}/api/bookings
 POST http://{{booking_service_url}}/api/bookings
 
 {
-    "bookingID": "a9833c64-c3c8-40d9-a684-55a371f260df",
-    "apartmentID": "a1203c64-c3c8-40d9-a684-55a371f260df",
+    "bookingID": "a4321c64-c3c8-40d9-a684-55a371f260df",
+    "apartmentID": "a3213c64-c3c8-40d9-a684-55a371f260df",
     "userID": "M47730",
     "startDate": "2023-12-01",
     "endDate": "2023-12-31"
 }
 
-### Delete apartment
+
+### Update Booking
+PATCH http://{{booking_service_url}}/api/bookings
+Content-Type: application/json
+
+{
+    "bookingID": "a4321c64-c3c8-40d9-a684-55a371f260df",
+    "apartmentID": "a0000c64-c3c8-40d9-a684-55a371f260df",
+    "userID": "M47730",
+    "startDate": "2023-11-01",
+    "endDate": "2023-11-30"
+}
+
+### Delete Booking
 
 DELETE http://{{booking_service_url}}/api/bookings
 Content-Type: application/json
@@ -59,3 +72,4 @@ Content-Type: application/json
 ### Search free apartments in search service
 
 GET http://{{search_service_url}}/api/apartments/available?from=2023-01-02&to=2023-01-05
+
