@@ -16,6 +16,15 @@ Content-Type: application/json
     "floor": "1"
 }
 
+### Delete apartment
+
+DELETE http://{{apartment_service_url}}/api/apartments
+Content-Type: application/json
+
+{
+    "id": "e7603c64-c3c8-40d9-a684-55a371f260df"
+}
+
 ### Search all apartments in apartments service (debug endpoint)
 
 GET http://{{apartment_service_url}}/api/apartments

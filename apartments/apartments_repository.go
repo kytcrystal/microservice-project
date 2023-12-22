@@ -41,6 +41,14 @@ func SaveApartment(apartment Apartment) Apartment {
 	return apartment
 }
 
+func DeleteApartment(apartmentId string) {
+	_, err := db.Exec("DELETE FROM apartment WHERE id = $1", apartmentId)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("Deleted apartment with id: %v\n", apartmentId)
+}
+
 func ListAllApartments() []Apartment {
 	apartment := Apartment{}
 	var apartmentList []Apartment
@@ -67,8 +75,9 @@ func ConnectToDatabase() *sqlx.DB {
 
 	tx := db.MustBegin()
 	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
+	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
 	// Named queries can use structs, so if you have an existing struct (i.e. person := &Person{}) that you have populated, you can pass it in as &person
-	// tx.NamedExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &Apartment{"gen_random_uuid()", "Sometimes Pink", "Merano", "1", "5"})
+	tx.NamedExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES (:apartment_name, :address, :noise_level, :floor)", &Apartment{"0", "Sometimes Pink", "Merano", "1", "5"})
 	tx.Commit()
 
 	// defer db.Close()

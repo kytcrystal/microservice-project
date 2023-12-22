@@ -23,6 +23,7 @@ func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 		allApartments := ListAllApartments()
 		json.NewEncoder(w).Encode(&allApartments)
 	case http.MethodPost:
+		fmt.Printf("got /api/apartments POST request\n")
 		var apartment Apartment
 		err := json.NewDecoder(r.Body).Decode(&apartment)
 		if err != nil {
@@ -30,9 +31,20 @@ func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Printf("got /api/apartments POST request\n")
 		apartment = SaveApartment(apartment)
 		json.NewEncoder(w).Encode(&apartment)
+	case http.MethodDelete:
+		fmt.Printf("got /api/apartments DELETE request\n")
+		var body struct{ Id string }
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		fmt.Println("here")
+		w.Header().Set("Content-Type", "application/json")
+		DeleteApartment(body.Id)
+		json.NewEncoder(w).Encode(&body)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

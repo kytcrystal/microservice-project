@@ -13,6 +13,7 @@
 - [ ] When a new appartment is created appartment service sends a rabbit mq message, booking service listen and create the appartment in it's own DB too;
 - [ ] Add search service with similar approach
 - [ ] Dockerize everything
+- [ ] In apartment, when adding new apartment, can check if id is passed in correctly. If yes, use that. If not, generate new UUID
 
 ## Requirements
 
