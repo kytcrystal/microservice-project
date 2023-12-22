@@ -32,20 +32,29 @@ GET http://{{apartment_service_url}}/api/apartments
 
 ### Get all bookings from booking service (debug endpoint)
 
-GET http://${{{{booking_service_url}}}}/api/bookings
+GET http://{{booking_service_url}}/api/bookings
+
 
 ### Create a booking
-
 
 POST http://{{booking_service_url}}/api/bookings
 
 {
-    "apartmentID": 1,
-    "userID": 123,
+    "bookingID": "a9833c64-c3c8-40d9-a684-55a371f260df",
+    "apartmentID": "a1203c64-c3c8-40d9-a684-55a371f260df",
+    "userID": "M47730",
     "startDate": "2023-12-01",
-    "toDate": "2023-12-30"
+    "endDate": "2023-12-31"
 }
 
+### Delete apartment
+
+DELETE http://{{booking_service_url}}/api/bookings
+Content-Type: application/json
+
+{
+    "bookingID": "a9833c64-c3c8-40d9-a684-55a371f260df"
+}
 
 ### Search free apartments in search service
 
