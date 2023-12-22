@@ -76,7 +76,6 @@ func (a *Application) Run() error {
 
 	go func() {
 		for d := range msgs {
-
 			var message SampleMessage
 			if err := json.Unmarshal(d.Body, &message); err != nil {
 				log.Printf("[error] failed to parse message body: %v", err)
