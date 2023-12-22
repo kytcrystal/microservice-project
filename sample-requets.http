@@ -40,8 +40,8 @@ GET http://{{booking_service_url}}/api/bookings
 POST http://{{booking_service_url}}/api/bookings
 
 {
-    "bookingID": "a4321c64-c3c8-40d9-a684-55a371f260df",
-    "apartmentID": "a3213c64-c3c8-40d9-a684-55a371f260df",
+    "bookingID": "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
+    "apartmentID": "41fe64fe-c086-4e9b-b946-6aea71783907",
     "userID": "M47730",
     "startDate": "2023-12-01",
     "endDate": "2023-12-31"
