@@ -13,7 +13,7 @@ import (
 
 type Booking struct {
 	ID          string `db:"id"`
-	ApartmentID string `db:"apartment_id"` 
+	ApartmentID string `db:"apartment_id"`
 	UserID      string `db:"user_id"`
 	StartDate   string `db:"start_date"`
 	EndDate     string `db:"end_date"`
@@ -34,26 +34,31 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 func CreateBooking(booking Booking) (*Booking, error) {
 	log.Printf("[booking-CreateBooking] New booking received %+v\n", booking)
-	valid := VerifyBookingDates(booking.StartDate, booking.EndDate)
-	if !valid {
+
+	if booking.StartDate >= booking.EndDate {
 		return nil, errors.New("booking dates are not valid")
 	}
+
 	exists, err := CheckApartmentExists(booking)
 	if err != nil {
 		return nil, errors.New("error checking apartments")
 	}
-	if exists {
-		available, err := CheckApartmentAvailable(booking)
-		if err != nil {
-			return nil, err
-		}
-		if available {
-			booking := SaveBooking(booking)
-			return &booking, nil
-		}
+	if !exists {
+		return nil, errors.New("apartment does not exist")
+
+	}
+
+	available, err := CheckApartmentAvailable(booking)
+	if err != nil {
+		return nil, err
+	}
+	if !available {
 		return nil, errors.New("apartment is not available")
 	}
-	return nil, errors.New("apartment does not exist")
+
+	bookingCreated := SaveBooking(booking)
+	return &bookingCreated, nil
+
 }
 
 func SaveBooking(booking Booking) Booking {
@@ -123,13 +128,6 @@ func CheckApartmentAvailable(newBooking Booking) (bool, error) {
 		}
 	}
 	return true, nil
-}
-
-func VerifyBookingDates(startDate string, endDate string) bool {
-	if startDate >= endDate {
-		return false
-	}
-	return true
 }
 
 func DatesAvailable(newBooking Booking, existingBooking Booking) bool {

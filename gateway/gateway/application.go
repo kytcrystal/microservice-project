@@ -21,8 +21,9 @@ type Application struct {
 func NewApplication() Application {
 	config, err := ReadConfigFromFile("configuration.yaml")
 	if err != nil {
-		log.Fatal("[NewApplication] Loaded configuration file", err)
+		log.Fatal("[NewApplication] error in loading configuration file", err)
 	}
+
 	log.Println("[NewApplication] Loaded configuration file")
 
 	return Application{
@@ -105,9 +106,8 @@ func (a Application) forwardRequest(w http.ResponseWriter, r *http.Request) erro
 }
 
 func (a Application) identifyDestHost(r *http.Request) (string, bool) {
-	requestPath := r.URL.Path
 	for _, route := range a.configuration.Routes {
-		if strings.Contains(requestPath, route.Prefix) {
+		if strings.Contains(r.URL.Path, route.Prefix) {
 			return route.Host, true
 		}
 	}
