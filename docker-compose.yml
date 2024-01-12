@@ -14,7 +14,7 @@ services:
   postgres-booking:
     image: postgres:14-alpine
     ports:
-      - 5431:5431
+      - 5431:5432
     environment:
       - POSTGRES_PASSWORD=MicroserviceApp
       - POSTGRES_USER=MicroserviceApp

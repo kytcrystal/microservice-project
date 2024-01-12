@@ -15,17 +15,14 @@ type Apartment struct {
 	Apartment_Name string
 }
 
-var apartmentDB *sqlx.DB = ConnectToApartmentDatabase()
+var apartmentDB *sqlx.DB = ConnectToBookingDatabase()
 
 var apartmentSchema = `
-DROP TABLE apartment;
+DROP TABLE IF EXISTS apartments;
 
-CREATE TABLE apartment (
+CREATE TABLE IF NOT EXISTS apartments (
 	id uuid primary key DEFAULT gen_random_uuid(),
-    apartment_name text,
-    address text,
-	noise_level text,
-	floor text
+    apartment_name text
 );`
 
 func RefreshApartment() {
@@ -34,7 +31,7 @@ func RefreshApartment() {
 
 func SaveApartment(apartment Apartment) Apartment {
 	apartment.Id = uuid.NewString()
-	_, err := apartmentDB.NamedExec("INSERT INTO apartment (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+	_, err := apartmentDB.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &apartment)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -43,7 +40,7 @@ func SaveApartment(apartment Apartment) Apartment {
 }
 
 func DeleteApartment(apartmentId string) {
-	_, err := apartmentDB.Exec("DELETE FROM apartment WHERE id = $1", apartmentId)
+	_, err := apartmentDB.Exec("DELETE FROM apartments WHERE id = $1", apartmentId)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -54,7 +51,7 @@ func ListAllApartments() []Apartment {
 	apartment := Apartment{}
 	var apartmentList []Apartment
 
-	rows, _ := apartmentDB.Queryx("SELECT * FROM apartment")
+	rows, _ := apartmentDB.Queryx("SELECT * FROM apartments")
 
 	for rows.Next() {
 		err := rows.StructScan(&apartment)
@@ -64,28 +61,4 @@ func ListAllApartments() []Apartment {
 		apartmentList = append(apartmentList, apartment)
 	}
 	return apartmentList
-}
-
-func ConnectToApartmentDatabase() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=ApartmentDB sslmode=disable password=MicroserviceApp host=localhost")
-	if err != nil {
-		log.Fatalln("[apartments_repository] Failed to connect to database", err)
-	}
-
-	db.MustExec(apartmentSchema)
-
-	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
-	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
-	tx.Commit()
-
-	// defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println("Successfully Connected")
-	}
-	return db
-
 }

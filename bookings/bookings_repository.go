@@ -21,9 +21,9 @@ type Booking struct {
 var bookingDB *sqlx.DB = ConnectToBookingDatabase()
 
 var bookingSchema = `
-DROP TABLE booking;
+DROP TABLE IF EXISTS bookings;
 
-CREATE TABLE booking (
+CREATE TABLE IF NOT EXISTS bookings (
 	id uuid primary key DEFAULT gen_random_uuid(),
     apartment_id uuid,
     user_id text,
@@ -57,7 +57,7 @@ func CreateBooking(booking Booking) (*Booking, error) {
 
 func SaveBooking(booking Booking) Booking {
 	booking.ID = uuid.NewString()
-	_, err := bookingDB.NamedExec("INSERT INTO booking (id, apartment_id, user_id, start_date, end_date) VALUES (:id, :apartment_id, :user_id, :start_date, :end_date)", &booking)
+	_, err := bookingDB.NamedExec("INSERT INTO bookings (id, apartment_id, user_id, start_date, end_date) VALUES (:id, :apartment_id, :user_id, :start_date, :end_date)", &booking)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -66,7 +66,7 @@ func SaveBooking(booking Booking) Booking {
 }
 
 func CancelBooking(bookingId string) {
-	_, err := bookingDB.Exec("DELETE FROM booking WHERE id = $1", bookingId)
+	_, err := bookingDB.Exec("DELETE FROM bookings WHERE id = $1", bookingId)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -83,7 +83,7 @@ func ListAllBookings() []Booking {
 	booking := Booking{}
 	var bookingList []Booking
 
-	rows, _ := bookingDB.Queryx("SELECT * FROM booking")
+	rows, _ := bookingDB.Queryx("SELECT * FROM bookings")
 
 	for rows.Next() {
 		err := rows.StructScan(&booking)
@@ -107,7 +107,7 @@ func CheckApartmentExists(booking Booking) (bool, error) {
 }
 
 func CheckApartmentAvailable(newBooking Booking) (bool, error) {
-	rows, _ := bookingDB.Queryx("SELECT * FROM booking WHERE apartment_id = $1", newBooking.ApartmentID)
+	rows, _ := bookingDB.Queryx("SELECT * FROM bookings WHERE apartment_id = $1", newBooking.ApartmentID)
 	existingBooking := Booking{}
 	for rows.Next() {
 		err := rows.StructScan(&existingBooking)
