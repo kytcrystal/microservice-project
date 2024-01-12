@@ -3,30 +3,34 @@ package bookings
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 var listOfBookings []Booking
 
 func Run() error {
+	var port = "3001"
+	log.Println("[app:run] starting booking service at port", port)
+
 	http.HandleFunc("/api/bookings", bookingsHandler)
 
-	err := http.ListenAndServe(":3001", nil)
+	err := http.ListenAndServe(":"+port, nil)
 	return err
 }
 
 func bookingsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("[bookingsHandler] received request: ", r.Method, r.URL.Path)
+
 	w.Header().Set("Content-Type", "application/json")
 
 	switch r.Method {
 
 	case http.MethodGet:
-		fmt.Printf("got /api/bookings GET request\n")
 		allBookings := ListAllBookings()
 		json.NewEncoder(w).Encode(&allBookings)
 
 	case http.MethodPost:
-		fmt.Printf("got /api/bookings POST request\n")
 		var booking Booking
 		err := json.NewDecoder(r.Body).Decode(&booking)
 		if err != nil {
@@ -40,7 +44,6 @@ func bookingsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		json.NewEncoder(w).Encode(&newBooking)
 	case http.MethodDelete:
-		fmt.Printf("got /api/bookings DELETE request\n")
 		var body struct{ BookingID string }
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
@@ -51,7 +54,6 @@ func bookingsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&body)
 
 	case http.MethodPatch:
-		fmt.Printf("got /api/bookings PATCH request\n")
 		var booking Booking
 		err := json.NewDecoder(r.Body).Decode(&booking)
 		if err != nil {

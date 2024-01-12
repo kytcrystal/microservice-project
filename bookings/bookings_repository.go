@@ -2,7 +2,6 @@ package bookings
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -33,7 +32,7 @@ CREATE TABLE booking (
 );`
 
 func CreateBooking(booking Booking) (*Booking, error) {
-	fmt.Printf("New booking received %v", booking)
+	log.Printf("[booking-CreateBooking] New booking received %+v\n", booking)
 	valid := VerifyBookingDates(booking.StartDate, booking.EndDate)
 	if !valid {
 		return nil, errors.New("booking dates are not valid")
@@ -62,7 +61,7 @@ func SaveBooking(booking Booking) Booking {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("Booking added: %v\n", booking)
+	log.Printf("[booking-CancelBooking] booking saved: %v\n", booking)
 	return booking
 }
 
@@ -71,7 +70,7 @@ func CancelBooking(bookingId string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("Deleted booking with id: %v\n", bookingId)
+	log.Printf("[booking-CancelBooking] Deleted booking with id: %v\n", bookingId)
 }
 
 func ChangeBooking(booking Booking) (*Booking, error) {

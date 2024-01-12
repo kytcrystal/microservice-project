@@ -6,9 +6,7 @@ import (
 )
 
 func main() {
-	err := bookings.Run()
-	if err != nil {
+	if err := bookings.Run(); err != nil {
 		log.Fatalf("Application terminated with error: %v", err)
 	}
 }
-
