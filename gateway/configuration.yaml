@@ -1,0 +1,7 @@
+routes:
+  - prefix: /api/apartment
+    host: localhost:3000
+  - prefix: /api/booking
+    host: localhost:3001
+  - prefix: /api/search
+    host: localhost:3002

@@ -2,9 +2,9 @@ go 1.21.4
 
 use (
 	./apartments
-	./search
 	./bookings
+	./gateway
+	./search
 )
-
 
 // https://github.com/golang/tools/blob/master/gopls/doc/workspace.md
