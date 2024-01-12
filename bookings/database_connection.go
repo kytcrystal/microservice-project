@@ -12,13 +12,15 @@ func ConnectToBookingDatabase() *sqlx.DB {
 		log.Fatalln("[booking:connect_to_booking_database] Failed to connect to database", err)
 	}
 
+	log.Println("[booking:connect_to_booking_database] starting to set up database schema")
+
 	db.MustExec(apartmentSchema)
 	refreshApartmentTable(db)
 
 	db.MustExec(bookingSchema)
 	refreshBookingTable(db)
 
-	defer db.Close()
+	log.Println("[booking:connect_to_booking_database] database schema set up without errors")
 
 	if err := db.Ping(); err != nil {
 		log.Fatal(err)

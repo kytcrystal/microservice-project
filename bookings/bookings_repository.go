@@ -2,6 +2,7 @@ package bookings
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -11,11 +12,11 @@ import (
 )
 
 type Booking struct {
-	ID          string
-	ApartmentID string
-	UserID      string
-	StartDate   string
-	EndDate     string
+	ID          string `db:"id"`
+	ApartmentID string `db:"apartment_id"` 
+	UserID      string `db:"user_id"`
+	StartDate   string `db:"start_date"`
+	EndDate     string `db:"end_date"`
 }
 
 var bookingDB *sqlx.DB = ConnectToBookingDatabase()
@@ -83,7 +84,10 @@ func ListAllBookings() []Booking {
 	booking := Booking{}
 	var bookingList []Booking
 
-	rows, _ := bookingDB.Queryx("SELECT * FROM bookings")
+	rows, err := bookingDB.Queryx("SELECT * FROM bookings")
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to read bookings from db: %w", err))
+	}
 
 	for rows.Next() {
 		err := rows.StructScan(&booking)
