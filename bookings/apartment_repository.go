@@ -21,7 +21,7 @@ var apartmentSchema = `
 DROP TABLE IF EXISTS apartments;
 
 CREATE TABLE IF NOT EXISTS apartments (
-	id uuid primary key DEFAULT gen_random_uuid(),
+	id uuid primary key,
     apartment_name text
 );`
 

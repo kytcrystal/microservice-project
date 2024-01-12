@@ -33,8 +33,8 @@ func ConnectToBookingDatabase() *sqlx.DB {
 
 func refreshApartmentTable(db *sqlx.DB) {
 	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO apartments (apartment_name) VALUES ($1)", "Rarely Yellow")
-	tx.MustExec("INSERT INTO apartments (apartment_name) VALUES ($1)", "Always Green")
+	tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "3cc6f6be-e6ea-479a-a1e7-3fd6cab8ae3f", Apartment_Name: "Rarely Orange"})
+	tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "d7675c3b-b97e-45a3-87a8-80b46b4d1162", Apartment_Name: "Often Blue"})
 	tx.Commit()
 }
 

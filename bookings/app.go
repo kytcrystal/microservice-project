@@ -44,13 +44,13 @@ func bookingsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		json.NewEncoder(w).Encode(&newBooking)
 	case http.MethodDelete:
-		var body struct{ BookingID string }
+		var body struct{ ID string }
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		CancelBooking(body.BookingID)
+		CancelBooking(body.ID)
 		json.NewEncoder(w).Encode(&body)
 
 	case http.MethodPatch:
