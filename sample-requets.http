@@ -1,6 +1,7 @@
 @apartment_service_url = localhost:3000
 @booking_service_url = localhost:3001
 @search_service_url = localhost:3002
+@api_gatway_url = localhost:3333
 
 
 

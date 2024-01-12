@@ -57,16 +57,18 @@ func withErrorHandling(handleFun func(w http.ResponseWriter, r *http.Request) er
 		err := handleFun(w, r)
 		// if there was an error we check, if it's of type `StatusError` we are
 		// able to return a custom status code. Otherwise we have to return 500 - Internal Server Error
-		switch err := err.(type) {
-		case StatusError:
-			w.WriteHeader(err.StatusCode)
-			json.NewEncoder(w).Encode(err)
-		default:
-			// in this case we log since it's a sort of unexpected scenario
-			log.Println("[withErrorHandling] - encountered unexpected error while processing request", r.Method, r.URL, err)
-			var errorResponse = StatusError{StatusCode: http.StatusInternalServerError, Message: err.Error()}
-			w.WriteHeader(errorResponse.StatusCode)
-			json.NewEncoder(w).Encode(errorResponse)
+		if err != nil {
+			switch err := err.(type) {
+			case StatusError:
+				w.WriteHeader(err.StatusCode)
+				json.NewEncoder(w).Encode(err)
+			default:
+				// in this case we log since it's a sort of unexpected scenario
+				log.Println("[withErrorHandling] - encountered unexpected error while processing request", r.Method, r.URL, err)
+				var errorResponse = StatusError{StatusCode: http.StatusInternalServerError, Message: err.Error()}
+				w.WriteHeader(errorResponse.StatusCode)
+				json.NewEncoder(w).Encode(errorResponse)
+			}
 		}
 	}
 }
