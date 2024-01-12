@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  postgres:
+  postgres-apartment:
     image: postgres:14-alpine
     ports:
       - 5432:5432
@@ -11,3 +11,11 @@ services:
       - POSTGRES_PASSWORD=MicroserviceApp
       - POSTGRES_USER=MicroserviceApp
       - POSTGRES_DB=ApartmentDB
+  postgres-booking:
+    image: postgres:14-alpine
+    ports:
+      - 5431:5431
+    environment:
+      - POSTGRES_PASSWORD=MicroserviceApp
+      - POSTGRES_USER=MicroserviceApp
+      - POSTGRES_DB=BookingDB

@@ -1,4 +1,4 @@
-package apartments
+package bookings
 
 import (
 	"fmt"
@@ -13,14 +13,11 @@ import (
 type Apartment struct {
 	Id             string
 	Apartment_Name string
-	Address        string
-	Noise_level    string
-	Floor          string
 }
 
-var db *sqlx.DB = ConnectToDatabase()
+var apartmentDB *sqlx.DB = ConnectToApartmentDatabase()
 
-var schema = `
+var apartmentSchema = `
 DROP TABLE apartment;
 
 CREATE TABLE apartment (
@@ -31,9 +28,13 @@ CREATE TABLE apartment (
 	floor text
 );`
 
+func RefreshApartment() {
+
+}
+
 func SaveApartment(apartment Apartment) Apartment {
 	apartment.Id = uuid.NewString()
-	_, err := db.NamedExec("INSERT INTO apartment (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+	_, err := apartmentDB.NamedExec("INSERT INTO apartment (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -42,7 +43,7 @@ func SaveApartment(apartment Apartment) Apartment {
 }
 
 func DeleteApartment(apartmentId string) {
-	_, err := db.Exec("DELETE FROM apartment WHERE id = $1", apartmentId)
+	_, err := apartmentDB.Exec("DELETE FROM apartment WHERE id = $1", apartmentId)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -53,7 +54,7 @@ func ListAllApartments() []Apartment {
 	apartment := Apartment{}
 	var apartmentList []Apartment
 
-	rows, _ := db.Queryx("SELECT * FROM apartment")
+	rows, _ := apartmentDB.Queryx("SELECT * FROM apartment")
 
 	for rows.Next() {
 		err := rows.StructScan(&apartment)
@@ -65,19 +66,17 @@ func ListAllApartments() []Apartment {
 	return apartmentList
 }
 
-func ConnectToDatabase() *sqlx.DB {
+func ConnectToApartmentDatabase() *sqlx.DB {
 	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=ApartmentDB sslmode=disable password=MicroserviceApp host=localhost")
 	if err != nil {
 		log.Fatalln("[apartments_repository] Failed to connect to database", err)
 	}
 
-	db.MustExec(schema)
+	db.MustExec(apartmentSchema)
 
 	tx := db.MustBegin()
 	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
 	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
-	// Named queries can use structs, so if you have an existing struct (i.e. person := &Person{}) that you have populated, you can pass it in as &person
-	tx.NamedExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES (:apartment_name, :address, :noise_level, :floor)", &Apartment{"0", "Sometimes Pink", "Merano", "1", "5"})
 	tx.Commit()
 
 	// defer db.Close()
