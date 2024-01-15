@@ -21,9 +21,9 @@ type Apartment struct {
 var db *sqlx.DB = ConnectToDatabase()
 
 var schema = `
-DROP TABLE apartment;
+DROP TABLE IF EXISTS apartments;
 
-CREATE TABLE apartment (
+CREATE TABLE IF NOT EXISTS apartments (
 	id uuid primary key DEFAULT gen_random_uuid(),
     apartment_name text,
     address text,
@@ -33,7 +33,7 @@ CREATE TABLE apartment (
 
 func SaveApartment(apartment Apartment) Apartment {
 	apartment.Id = uuid.NewString()
-	_, err := db.NamedExec("INSERT INTO apartment (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+	_, err := db.NamedExec("INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -42,7 +42,7 @@ func SaveApartment(apartment Apartment) Apartment {
 }
 
 func DeleteApartment(apartmentId string) {
-	_, err := db.Exec("DELETE FROM apartment WHERE id = $1", apartmentId)
+	_, err := db.Exec("DELETE FROM apartments WHERE id = $1", apartmentId)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -53,7 +53,7 @@ func ListAllApartments() []Apartment {
 	apartment := Apartment{}
 	var apartmentList []Apartment
 
-	rows, _ := db.Queryx("SELECT * FROM apartment")
+	rows, _ := db.Queryx("SELECT * FROM apartments")
 
 	for rows.Next() {
 		err := rows.StructScan(&apartment)
@@ -74,13 +74,10 @@ func ConnectToDatabase() *sqlx.DB {
 	db.MustExec(schema)
 
 	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
-	tx.MustExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
-	// Named queries can use structs, so if you have an existing struct (i.e. person := &Person{}) that you have populated, you can pass it in as &person
-	tx.NamedExec("INSERT INTO apartment (apartment_name, address, noise_level, floor) VALUES (:apartment_name, :address, :noise_level, :floor)", &Apartment{"0", "Sometimes Pink", "Merano", "1", "5"})
+	tx.MustExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
+	tx.MustExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
+	tx.NamedExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES (:apartment_name, :address, :noise_level, :floor)", &Apartment{"0", "Sometimes Pink", "Merano", "1", "5"})
 	tx.Commit()
-
-	// defer db.Close()
 
 	if err := db.Ping(); err != nil {
 		log.Fatal(err)
@@ -88,5 +85,4 @@ func ConnectToDatabase() *sqlx.DB {
 		log.Println("Successfully Connected")
 	}
 	return db
-
 }

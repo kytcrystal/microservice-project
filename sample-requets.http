@@ -4,8 +4,15 @@
 @api_gatway_url = localhost:3333
 
 
+######################### Apartment Service ###########################
 
-### Create new apartment
+### Get all apartments in apartments service
+
+GET http://{{apartment_service_url}}/api/apartments
+
+
+
+### Create new apartment in apartments service
 
 POST http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
@@ -17,26 +24,25 @@ Content-Type: application/json
     "floor": "1"
 }
 
-### Delete apartment
+
+### Delete apartment in apartments service
 
 DELETE http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "id": "e7603c64-c3c8-40d9-a684-55a371f260df"
+    "id": "bce9795b-670a-4faf-88db-ce7e14284a4e"
 }
 
-### Search all apartments in apartments service (debug endpoint)
 
-GET http://{{apartment_service_url}}/api/apartments
+######################### Booking Service ###########################
 
-
-### Get all bookings from booking service (debug endpoint)
+### Get all bookings from bookings service
 
 GET http://{{booking_service_url}}/api/bookings
 
 
-### Create a booking
+### Create a booking in bookings service
 
 POST http://{{booking_service_url}}/api/bookings
 
@@ -49,7 +55,7 @@ POST http://{{booking_service_url}}/api/bookings
 }
 
 
-### Update Booking
+### Update booking in bookings service
 PATCH http://{{booking_service_url}}/api/bookings
 Content-Type: application/json
 
@@ -61,7 +67,8 @@ Content-Type: application/json
     "endDate": "2023-11-32"
 }
 
-### Delete Booking
+
+### Delete booking in bookings service
 
 DELETE http://{{booking_service_url}}/api/bookings
 Content-Type: application/json
@@ -69,6 +76,9 @@ Content-Type: application/json
 {
     "id": "58c0faed-ad6d-4660-91ec-52f3301e5a97"
 }
+
+
+######################### Search Service ###########################
 
 ### Search free apartments in search service
 
