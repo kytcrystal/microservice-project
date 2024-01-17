@@ -25,10 +25,6 @@ CREATE TABLE IF NOT EXISTS apartments (
     apartment_name text
 );`
 
-func RefreshApartment() {
-
-}
-
 func SaveApartment(apartment Apartment) Apartment {
 	apartment.Id = uuid.NewString()
 	_, err := apartmentDB.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &apartment)
