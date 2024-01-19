@@ -13,7 +13,7 @@
 - [ ] When a new apartment is created, apartment service sends a rabbit mq message, booking service listen and create the appartment in it's own DB too
 - [ ] Add search service with similar approach
 - [ ] Dockerize applications
-  - [ ] Apartments
+  - [x] Apartments
   - [ ] Bookings
   - [ ] Search
   - [ ] Gateway
@@ -31,6 +31,8 @@
 - [ ] Direct call from Search service to Apartment service, if apartments table is empty
 - [ ] Direct call from Search service to Booking service, if bookings table is empty
 - [ ] Implement event sourcing for Booking service
+- [ ] Docker multistage build
+
 
 
 

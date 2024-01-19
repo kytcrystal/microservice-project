@@ -1,0 +1,24 @@
+# Build the application from source
+FROM golang:1.21.4 AS build-stage
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY *.go ./
+
+RUN go build -o /apartments
+
+# Deploy the application binary into a lean image
+FROM gcr.io/distroless/base-debian11 AS build-release-stage
+
+WORKDIR /
+
+COPY --from=build-stage /apartments /apartments
+
+EXPOSE 3000
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/apartments/main"]

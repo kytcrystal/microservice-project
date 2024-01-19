@@ -11,7 +11,7 @@ import (
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
-	io.WriteString(w, "This is my website!\n")
+	io.WriteString(w, "Welcome to Apartments website!\n")
 }
 
 func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
