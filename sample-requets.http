@@ -82,4 +82,4 @@ Content-Type: application/json
 
 ### Search free apartments in search service
 
-GET http://{{search_service_url}}/api/apartments/available?from=2023-01-02&to=2023-01-05
+GET http://{{search_service_url}}/api/search/available?from=2023-01-02&to=2023-01-05

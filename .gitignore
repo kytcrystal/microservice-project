@@ -16,3 +16,46 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+
+# Node.js
+node_modules/
+
+# npm
+npm-debug.log
+*.log
+*.lock
+node_modules/
+package.json
+package-lock.json
+yarn.lock
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test coverage
+coverage/
+
+# Dependency directories
+/jspm_packages/
+/bower_components/
+/bower/
+
+# Build directories
+/dist/
+/out/
+/build/
+
+# Logs and databases
+/logs/
+*.sqlite
+*.log
