@@ -1,7 +1,7 @@
 routes:
   - prefix: /api/apartment
-    host: apartment:3000
+    host: apartments:3000
   - prefix: /api/booking
-    host: booking:3000
+    host: bookings:3000
   - prefix: /api/search
     host: search:3000
