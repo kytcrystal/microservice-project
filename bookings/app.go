@@ -86,20 +86,65 @@ func StartListener() error {
 		return fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
 
-	const APARTMENTS_QUEUE_NAME = "apartment_created"
-	queue, err := channel.QueueDeclare(
-		APARTMENTS_QUEUE_NAME, // name
-		false,                 // durable
-		false,                 // delete when unused
-		false,                 // exclusive
-		false,                 // no-wait
-		nil,                   // arguments
-	)
+	const APARTMENTS_CREATED_QUEUE = "apartment_created"
+	createdMessages, err := createQueue(APARTMENTS_CREATED_QUEUE, channel)
 	if err != nil {
-		return fmt.Errorf("failed to create new queue: %v", err)
+		return fmt.Errorf("failed to create apartment_created queue or channel: %w", err)
 	}
 
-	// Just as a simple example let's try to set up the listener as well
+	go func() {
+		for d := range createdMessages {
+			var message Apartment
+			if err := json.Unmarshal(d.Body, &message); err != nil {
+				log.Printf("[error] failed to parse message body: %v", err)
+				continue
+			}
+
+			log.Printf("Received a message: %+v", message)
+			
+			SaveApartment(message)
+		}
+	}()
+	log.Printf("Server is listening to queue `%s`", APARTMENTS_CREATED_QUEUE)
+
+
+	const APARTMENTS_DELETED_QUEUE = "apartment_deleted"
+	deletedMessages, err := createQueue(APARTMENTS_DELETED_QUEUE, channel)
+	if err != nil {
+		return fmt.Errorf("failed to create apartment_deleted queue or channel: %w", err)
+	}
+
+	go func() {
+		for d := range deletedMessages {
+			var message struct{ Id string }
+			if err := json.Unmarshal(d.Body, &message); err != nil {
+				log.Printf("[error] failed to parse message body: %v", err)
+				continue
+			}
+
+			log.Printf("Received a message: %+v", message)
+			
+			DeleteApartment(message.Id)
+		}
+	}()
+	log.Printf("Server is listening to queue `%s`", APARTMENTS_DELETED_QUEUE)
+
+	return nil
+}
+
+func createQueue(queueName string,channel *amqp.Channel) (<-chan amqp.Delivery, error) {
+
+	queue, err := channel.QueueDeclare(
+		queueName, 	// name
+		false,		// durable
+		false,		// delete when unused
+		false, 		// exclusive
+		false, 		// no-wait
+		nil, 		// arguments
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	msgs, err := channel.Consume(
 		queue.Name, // queue
@@ -112,23 +157,8 @@ func StartListener() error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("failed to create message consumer: %w", err)
+		return nil, err
 	}
 
-	go func() {
-		for d := range msgs {
-			var message Apartment
-			if err := json.Unmarshal(d.Body, &message); err != nil {
-				log.Printf("[error] failed to parse message body: %v", err)
-				continue
-			}
-
-			log.Printf("Received a message: %+v", message)
-			
-			SaveApartment(message)
-		}
-	}()
-
-	log.Printf("Server is listening to queue `%s`", queue.Name)
-	return nil
+	return msgs, nil
 }
