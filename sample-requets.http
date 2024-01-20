@@ -18,7 +18,7 @@ POST http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "apartment_name": "Maybe White", 
+    "apartment_name": "Always White", 
     "address": "Trento",
     "noise_level": "5",
     "floor": "1"

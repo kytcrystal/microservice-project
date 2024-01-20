@@ -1,7 +1,14 @@
 package main
 
-import "apartments"
+import (
+	"apartments"
+	"log"
+)
 
 func main() {
-	apartments.StartApp()
+	application, err := apartments.CreateApp()
+	if err != nil {
+		log.Fatal(err)
+	}
+	application.StartApp()
 }

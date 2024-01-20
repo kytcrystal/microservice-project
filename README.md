@@ -14,7 +14,7 @@
 - [ ] Add search service with similar approach
 - [ ] Dockerize applications
   - [x] Apartments
-  - [ ] Bookings
+  - [x] Bookings
   - [ ] Search
   - [ ] Gateway
   - [ ] Configuration for yaml file for Gateway

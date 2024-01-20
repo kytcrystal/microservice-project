@@ -14,7 +14,7 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Welcome to Apartments website!\n")
 }
 
-func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
+func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
@@ -33,6 +33,10 @@ func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		apartment = SaveApartment(apartment)
 		json.NewEncoder(w).Encode(&apartment)
+
+		message := apartment
+		a.publisher.SendMessage("apartment_created", message)
+
 	case http.MethodDelete:
 		fmt.Printf("got /api/apartments DELETE request\n")
 		var body struct{ Id string }
@@ -45,14 +49,32 @@ func apartmentsHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		DeleteApartment(body.Id)
 		json.NewEncoder(w).Encode(&body)
+
+		message := body
+		a.publisher.SendMessage("apartment_deleted", message)
+
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-func StartApp() {
+type Application struct {
+	publisher *Publisher
+}
+
+func CreateApp() (*Application, error) {
+	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
+	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
+	if err != nil {
+		return nil, err
+	}
+	apartmentApplication := Application{publisher: apartmentPublisher}
+	return &apartmentApplication, nil
+}
+
+func (a *Application) StartApp() {
 	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/api/apartments", apartmentsHandler)
+	http.HandleFunc("/api/apartments", a.apartmentsHandler)
 
 	err := http.ListenAndServe(":3000", nil)
 	if errors.Is(err, http.ErrServerClosed) {
