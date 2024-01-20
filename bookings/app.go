@@ -23,68 +23,55 @@ func NewApplication() (*Application, error) {
 
 	return &Application{
 		publisher: *apartmentPublisher,
+		ServeMux:  http.DefaultServeMux,
 	}, nil
 }
 
 func (a *Application) Run() error {
 	var port = "3000"
 
-	http.HandleFunc("/api/bookings", bookingsHandler)
+	a.CustomHandleFunc("/api/bookings", a.bookingsHandler)
 
 	StartListener()
 
 	log.Println("[app:run] starting booking service at port", port)
-	err := http.ListenAndServe(":"+port, nil)
+	err := http.ListenAndServe(":"+port, a.ServeMux)
 	return err
 }
 
-func bookingsHandler(w http.ResponseWriter, r *http.Request) {
+func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (any, error) {
 	log.Println("[bookingsHandler] received request: ", r.Method, r.URL.Path)
-
-	w.Header().Set("Content-Type", "application/json")
-
 	switch r.Method {
 
 	case http.MethodGet:
-		http.Error()
-		allBookings := ListAllBookings()
-		json.NewEncoder(w).Encode(&allBookings)
+		return ListAllBookings()
 
 	case http.MethodPost:
 		var booking Booking
 		err := json.NewDecoder(r.Body).Decode(&booking)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return nil, err
 		}
-		newBooking, err := CreateBooking(booking)
-		if err != nil {
-			fmt.Fprintf(w, "error in booking %v", err)
-			return
-		}
-		json.NewEncoder(w).Encode(&newBooking)
+		return CreateBooking(booking)
 	case http.MethodDelete:
 		var body struct{ ID string }
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return nil, err
 		}
-		CancelBooking(body.ID)
-		json.NewEncoder(w).Encode(&body)
-
+		if err := CancelBooking(body.ID); err != nil {
+			return nil, err
+		}
+		return body, nil
 	case http.MethodPatch:
 		var booking Booking
 		err := json.NewDecoder(r.Body).Decode(&booking)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return nil, err
 		}
-		ChangeBooking(booking)
-		json.NewEncoder(w).Encode(&booking)
-
+		return ChangeBooking(booking)
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return nil, fmt.Errorf("method not allowed")
 	}
 }
 
@@ -176,4 +163,17 @@ func createQueue(queueName string, channel *amqp.Channel) (<-chan amqp.Delivery,
 	}
 
 	return msgs, nil
+}
+
+func (a *Application) CustomHandleFunc(pattern string, handle func(http.ResponseWriter, *http.Request) (any, error)) {
+	a.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		value, err := handle(w, r)
+		if err != nil {
+			log.Println("Encountered error while handling request", r.Method, r.URL.Path, err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(value)
+	})
 }

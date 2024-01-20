@@ -71,21 +71,25 @@ func SaveBooking(booking Booking) Booking {
 	return booking
 }
 
-func CancelBooking(bookingId string) {
+func CancelBooking(bookingId string) error {
 	_, err := bookingDB.Exec("DELETE FROM bookings WHERE id = $1", bookingId)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	log.Printf("[booking-CancelBooking] Deleted booking with id: %v\n", bookingId)
+	return nil
 }
 
 func ChangeBooking(booking Booking) (*Booking, error) {
-	CancelBooking(booking.ID)
+	err := CancelBooking(booking.ID)
+	if err != nil {
+		return nil, err
+	}
 	newBooking, err := CreateBooking(booking)
 	return newBooking, err
 }
 
-func ListAllBookings() []Booking {
+func ListAllBookings() ([]Booking, error) {
 	booking := Booking{}
 	var bookingList []Booking
 
@@ -101,7 +105,7 @@ func ListAllBookings() []Booking {
 		}
 		bookingList = append(bookingList, booking)
 	}
-	return bookingList
+	return bookingList, nil
 }
 
 func CheckApartmentExists(booking Booking) (bool, error) {
