@@ -6,7 +6,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -26,7 +25,6 @@ CREATE TABLE IF NOT EXISTS apartments (
 );`
 
 func SaveApartment(apartment Apartment) Apartment {
-	apartment.Id = uuid.NewString()
 	_, err := apartmentDB.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &apartment)
 	if err != nil {
 		log.Fatalln(err)
