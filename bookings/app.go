@@ -10,7 +10,7 @@ import (
 var listOfBookings []Booking
 
 func Run() error {
-	var port = "3001"
+	var port = "3000"
 	log.Println("[app:run] starting booking service at port", port)
 
 	http.HandleFunc("/api/bookings", bookingsHandler)

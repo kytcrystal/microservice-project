@@ -10,7 +10,7 @@ import (
 )
 
 func ConnectToBookingDatabase() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=BookingDB sslmode=disable password=MicroserviceApp host=localhost port=5431")
+	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=BookingDB sslmode=disable password=MicroserviceApp host=postgres-booking port=5432")
 	if err != nil {
 		log.Fatalln("[booking:connect_to_booking_database] Failed to connect to database", err)
 	}
@@ -37,7 +37,7 @@ func ConnectToBookingDatabase() *sqlx.DB {
 func refreshApartmentTable(db *sqlx.DB) {
 	tx := db.MustBegin()
 
-	response, err := http.Get("http://localhost:3000/api/apartments")
+	response, err := http.Get("http://apartments:3000/api/apartments")
 	if err != nil {
 		log.Fatalf("fail to connect: %w", err)
 	}

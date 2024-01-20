@@ -5,7 +5,10 @@ services:
     build: ./apartments
     ports:
       - "3000:3000"
-    
+  bookings:
+    build: ./bookings
+    ports:
+      - "3001:3000"
   postgres-apartment:
     image: postgres:14-alpine
     ports:
