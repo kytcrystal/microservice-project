@@ -83,3 +83,13 @@ Content-Type: application/json
 ### Search free apartments in search service
 
 GET http://{{search_service_url}}/api/search/available?from=2023-01-02&to=2023-01-05
+
+
+### Search all apartments in search service
+
+GET http://{{search_service_url}}/api/search/apartments
+
+
+### Search all bookings in search service
+
+GET http://{{search_service_url}}/api/search/bookings

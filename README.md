@@ -18,8 +18,8 @@
 - [ ] Booking post event to another queue (booking added, changed and cancelled)
 
 - [ ] Search service -> javascript
-  - [ ] needs to have a DB with apartments -> should it be NoSQL?
-  - [ ] needs to have a DB with bookings -> should it be NoSQL?
+  - [ ] needs to have a DB with apartments
+  - [ ] needs to have a DB with bookings
   - [ ] needs to know which apartment exists and are available
   - [ ] should be able to search apartments using "from" date and "to" date
   - [ ] register for booking events
@@ -34,6 +34,7 @@
   - [ ] Gateway
   - [ ] Configuration for yaml file for Gateway
 - [ ] Implement event sourcing for Booking service
+- [ ] Implement NoSQL DB for apartments DB
 - [ ] In apartment, when adding new apartment, can check if id is passed in correctly. If yes, use that. If not, generate new UUID
 - [ ] Docker multistage build
 
