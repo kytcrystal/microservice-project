@@ -52,7 +52,15 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 		if err != nil {
 			return nil, err
 		}
-		return CreateBooking(booking)
+		bookingCreated, err := CreateBooking(booking)
+		if err != nil {
+			return nil, err
+		}
+		err = a.publisher.SendMessage("booking_created", BookingCreatedEvent{bookingCreated})
+		if err != nil {
+			return nil, err
+		}
+		return bookingCreated, nil
 	case http.MethodDelete:
 		var body struct{ ID string }
 		err := json.NewDecoder(r.Body).Decode(&body)
@@ -62,6 +70,10 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 		if err := CancelBooking(body.ID); err != nil {
 			return nil, err
 		}
+		err = a.publisher.SendMessage("booking_cancelled", BookingCancelledEvent{body.ID})
+		if err != nil {
+			return nil, err
+		}
 		return body, nil
 	case http.MethodPatch:
 		var booking Booking
@@ -69,7 +81,15 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 		if err != nil {
 			return nil, err
 		}
-		return ChangeBooking(booking)
+		updatedBooking, err := ChangeBooking(booking)
+		if err != nil {
+			return nil, err
+		}
+		err = a.publisher.SendMessage("booking_updated", BookingUpdatedEvent{updatedBooking})
+		if err != nil {
+			return nil, err
+		}
+		return updatedBooking, nil
 	default:
 		return nil, fmt.Errorf("method not allowed")
 	}
