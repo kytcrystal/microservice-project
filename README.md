@@ -18,8 +18,8 @@
 - [ ] Booking post event to another queue (booking added, changed and cancelled)
 
 - [ ] Search service -> javascript
-  - [ ] needs to have a DB with apartments
-  - [ ] needs to have a DB with bookings
+  - [X] needs to have a DB with apartments
+  - [X] needs to have a DB with bookings
   - [ ] needs to know which apartment exists and are available
   - [ ] should be able to search apartments using "from" date and "to" date
   - [ ] register for booking events

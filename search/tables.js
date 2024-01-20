@@ -71,7 +71,20 @@ function listAll(db, table) {
 //   db.run(insert, apartment);
 // }
 
+function searchAvailableApartments(db, fromDate, toDate) {
+  const stmt = db.prepare(`SELECT * FROM apartments WHERE id NOT IN 
+    (SELECT apartment_id FROM bookings WHERE 
+    (start_date <= @fromDate AND end_date >= @fromDate) OR            -- bookings that include fromDate
+    (start_date <= @toDate AND end_date >= @toDate) OR                -- bookings that include toDate
+    (start_date >= @fromDate AND end_date <= @toDate))                -- bookings that included in [fromDate, toDate]
+    `);    
+  const row = stmt.all({fromDate, toDate});
+  console.table(row)
+  return row; 
+}
+
 module.exports = {
   createTable: createTable,
   listAll: listAll,
+  searchAvailableApartments: searchAvailableApartments,
 };

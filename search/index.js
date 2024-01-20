@@ -12,17 +12,17 @@ app.get("/", (req, res) => {
 app.get("/api/search/available", (req, res) => {
   const from = req.query.from || "";
   const to = req.query.to || "";
-
-  res.send(`Hello, searching for date from ${from} to ${to}!`);
+  const row = tables.searchAvailableApartments(db, from, to);
+  res.send(row);
 });
 
 app.get("/api/search/apartments", (req, res) => {
-  var row = tables.listAll(db, "apartments");
+  const row = tables.listAll(db, "apartments");
   res.send(row);
 });
 
 app.get("/api/search/bookings", (req, res) => {
-  var row = tables.listAll(db, "bookings");
+  const row = tables.listAll(db, "bookings");
   res.send(row);
 });
 
