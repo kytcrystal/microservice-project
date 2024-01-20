@@ -8,8 +8,7 @@
 
 ### Get all apartments in apartments service
 
-GET http://{{apartment_service_url}}/api/apartments
-
+GET http://{{api_gatway_url}}/api/apartments
 
 
 ### Create new apartment in apartments service
