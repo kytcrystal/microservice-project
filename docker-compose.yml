@@ -9,6 +9,12 @@ services:
     build: ./bookings
     ports:
       - "3001:3000"
+  gateway:
+    build: ./gateway
+    ports:
+      - "3333:3333"
+    environment:
+      - CONFIGURATION_FILE=configuration-deploy.yaml
   postgres-apartment:
     image: postgres:14-alpine
     ports:

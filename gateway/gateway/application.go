@@ -19,12 +19,16 @@ type Application struct {
 }
 
 func NewApplication() Application {
-	config, err := ReadConfigFromFile("configuration.yaml")
+	configFileName := "configuration.yaml"
+	if overrideConfigFile := os.Getenv("CONFIGURATION_FILE"); overrideConfigFile != "" {
+		configFileName = overrideConfigFile
+	}
+	config, err := ReadConfigFromFile(configFileName)
 	if err != nil {
 		log.Fatal("[NewApplication] error in loading configuration file", err)
 	}
 
-	log.Println("[NewApplication] Loaded configuration file")
+	log.Println("[NewApplication] Loaded configuration file", config)
 
 	return Application{
 		configuration: config,
