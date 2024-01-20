@@ -11,11 +11,11 @@ import (
 )
 
 type Apartment struct {
-	Id             string
-	Apartment_Name string
-	Address        string
-	Noise_level    string
-	Floor          string
+	Id             string `db:"id" json:"id"`
+	ApartmentName string `db:"apartment_name" json:"apartment_name"`
+	Address        string `db:"address" json:"address"`
+	NoiseLevel    string `db:"noise_level" json:"noise_level"`
+	Floor          string `db:"floor" json:"floor"`
 }
 
 var db *sqlx.DB = ConnectToDatabase()

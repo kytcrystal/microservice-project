@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 function createTable(db) {
   const createApartmentsTable = `
     DROP TABLE IF EXISTS apartments;
@@ -17,16 +19,19 @@ function createTable(db) {
     
     CREATE TABLE IF NOT EXISTS bookings (
       id uuid primary key,
-      apartmentID text,
-      userID text,
-      startDate text,
-      endDate text
+      apartment_id text,
+      user_id text,
+      start_date text,
+      end_date text
     );`;
   db.exec(createBookingsTable);
   refreshBookings(db);
 }
 
-function refreshApartments(db) {
+async function refreshApartments(db) {
+  const APARTMENT_URL = "http://localhost:3000/api/apartments";
+  const response = await axios.get(APARTMENT_URL);
+
   const insert = db.prepare(
     "INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (@id, @apartment_name, @address, @noise_level, @floor)"
   );
@@ -35,49 +40,22 @@ function refreshApartments(db) {
     for (const apt of apartments) insert.run(apt);
   });
 
-  insertMany([
-    {
-      id: "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-      apartment_name: "Always White",
-      address: "Trento",
-      noise_level: "5",
-      floor: "1",
-    },
-    {
-      id: "2f0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-      apartment_name: "Always Blue",
-      address: "Bolzano",
-      noise_level: "3",
-      floor: "4",
-    },
-  ]);
+  insertMany(response.data);
 }
 
-function refreshBookings(db) {
+async function refreshBookings(db) {
+  const BOOKING_URL = "http://localhost:3001/api/bookings";
+  const response = await axios.get(BOOKING_URL);
+
   const insert = db.prepare(
-    "INSERT INTO bookings (id, apartmentID, userID, startDate, endDate) VALUES (@id, @apartmentID, @userID, @startDate, @endDate)"
+    "INSERT INTO bookings (id, apartment_id, user_id, start_date, end_date) VALUES (@id, @apartment_id, @user_id, @start_date, @end_date)"
   );
 
   const insertMany = db.transaction((bookings) => {
     for (const booking of bookings) insert.run(booking);
   });
 
-  insertMany([
-    {
-      id: "6e0cfb4e-0a11-48c8-a1f5-e82f5587818d",
-      apartmentID: "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-      userID: "M47730",
-      startDate: "2024-11-01",
-      endDate: "2024-11-23",
-    },
-    {
-      id: "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-      apartmentID: "2f0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-      userID: "M47730",
-      startDate: "2024-02-01",
-      endDate: "2024-03-01",
-    },
-  ]);
+  insertMany(response.data);
 }
 
 function listAll(db, table) {
@@ -85,6 +63,13 @@ function listAll(db, table) {
   const row = stmt.all();
   return row;
 }
+
+// function createApartment(db, apartment) {
+//   const insert = db.prepare(
+//     "INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (@id, @apartment_name, @address, @noise_level, @floor)"
+//   );
+//   db.run(insert, apartment);
+// }
 
 module.exports = {
   createTable: createTable,

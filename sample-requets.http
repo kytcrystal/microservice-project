@@ -8,7 +8,7 @@
 
 ### Get all apartments in apartments service
 
-GET http://{{api_gatway_url}}/api/apartments
+GET http://{{apartment_service_url}}/api/apartments
 
 
 ### Create new apartment in apartments service
@@ -47,10 +47,10 @@ POST http://{{booking_service_url}}/api/bookings
 
 {
     "id": "{{$guid}}",
-    "apartmentID": "7948f138-6eee-4ae9-8812-413d191b88f5",
-    "userID": "M47730",
-    "startDate": "2025-03-01",
-    "endDate": "2025-03-02"
+    "apartment_id": "7360c491-79e6-4c7e-9f51-df62d36e9da9",
+    "user_id": "M47730",
+    "start_date": "2025-03-01",
+    "end_date": "2025-03-02"
 }
 
 
@@ -60,10 +60,10 @@ Content-Type: application/json
 
 {
     "id": "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-    "apartmentID": "d7675c3b-b97e-45a3-87a8-80b46b4d1162",
-    "userID": "M47730",
-    "startDate": "2023-11-01",
-    "endDate": "2023-11-32"
+    "apartment_id": "d7675c3b-b97e-45a3-87a8-80b46b4d1162",
+    "user_id": "M47730",
+    "start_date": "2023-11-01",
+    "end_date": "2023-11-32"
 }
 
 

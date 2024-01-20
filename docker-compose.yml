@@ -5,10 +5,15 @@ services:
     build: ./apartments
     ports:
       - "3000:3000"
+    depends_on:
+      - postgres-apartment
+      - rabbitmq
   bookings:
     build: ./bookings
     ports:
       - "3001:3000"
+    depends_on:
+      - postgres-booking
   gateway:
     build: ./gateway
     ports:

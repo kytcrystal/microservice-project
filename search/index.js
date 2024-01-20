@@ -26,6 +26,8 @@ app.get("/api/search/bookings", (req, res) => {
   res.send(row);
 });
 
+
+
 tables.createTable(db);
 
 const port = 3002;
