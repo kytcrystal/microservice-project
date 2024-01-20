@@ -9,9 +9,24 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var listOfBookings []Booking
+type Application struct {
+	publisher Publisher
+	*http.ServeMux
+}
 
-func Run() error {
+func NewApplication() (*Application, error) {
+	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
+	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize rabbit mq: %w", err)
+	}
+
+	return &Application{
+		publisher: *apartmentPublisher,
+	}, nil
+}
+
+func (a *Application) Run() error {
 	var port = "3000"
 
 	http.HandleFunc("/api/bookings", bookingsHandler)
@@ -31,6 +46,7 @@ func bookingsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
+		http.Error()
 		allBookings := ListAllBookings()
 		json.NewEncoder(w).Encode(&allBookings)
 
@@ -101,12 +117,11 @@ func StartListener() error {
 			}
 
 			log.Printf("Received a message: %+v", message)
-			
+
 			SaveApartment(message)
 		}
 	}()
 	log.Printf("Server is listening to queue `%s`", APARTMENTS_CREATED_QUEUE)
-
 
 	const APARTMENTS_DELETED_QUEUE = "apartment_deleted"
 	deletedMessages, err := createQueue(APARTMENTS_DELETED_QUEUE, channel)
@@ -123,7 +138,7 @@ func StartListener() error {
 			}
 
 			log.Printf("Received a message: %+v", message)
-			
+
 			DeleteApartment(message.Id)
 		}
 	}()
@@ -132,15 +147,15 @@ func StartListener() error {
 	return nil
 }
 
-func createQueue(queueName string,channel *amqp.Channel) (<-chan amqp.Delivery, error) {
+func createQueue(queueName string, channel *amqp.Channel) (<-chan amqp.Delivery, error) {
 
 	queue, err := channel.QueueDeclare(
-		queueName, 	// name
-		false,		// durable
-		false,		// delete when unused
-		false, 		// exclusive
-		false, 		// no-wait
-		nil, 		// arguments
+		queueName, // name
+		false,     // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
 		return nil, err
