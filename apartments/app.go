@@ -1,66 +1,15 @@
 package apartments
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 )
-
-func getRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("got / request\n")
-	io.WriteString(w, "Welcome to Apartments website!\n")
-}
-
-func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("[apartmentsHandler] received new request", r.Method, r.URL.Path)
-
-	switch r.Method {
-	case http.MethodGet:
-		w.Header().Set("Content-Type", "application/json")
-		allApartments := a.repo.ListAllApartments()
-		json.NewEncoder(w).Encode(&allApartments)
-	case http.MethodPost:
-		var apartment Apartment
-		err := json.NewDecoder(r.Body).Decode(&apartment)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		apartment = a.repo.SaveApartment(apartment)
-		json.NewEncoder(w).Encode(&apartment)
-
-		message := apartment
-		a.publisher.SendMessage("apartment_created", message)
-
-	case http.MethodDelete:
-		var body struct {
-			Id string `db:"id" json:"id"`
-		}
-		err := json.NewDecoder(r.Body).Decode(&body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		a.repo.DeleteApartment(body.Id)
-		json.NewEncoder(w).Encode(&body)
-
-		message := body
-		a.publisher.SendMessage("apartment_deleted", message)
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
 
 type Application struct {
 	repo      *ApartmentRepository
 	publisher Publisher
+	*http.ServeMux
 }
 
 func CreateApp() (*Application, error) {
@@ -70,25 +19,24 @@ func CreateApp() (*Application, error) {
 		return nil, err
 	}
 
-	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
-	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
+	apartmentPublisher, err := NewPublisher(MQ_CONNECTION_STRING)
 	if err != nil {
-		log.Println("[CreateApp] failed to setup rabbit mq publisher: will retry when first message is sent", err)
 		apartmentPublisher = &RetryPublisher{}
 	}
-	apartmentApplication := Application{repo: repo, publisher: apartmentPublisher}
-	return &apartmentApplication, nil
+
+	return &Application{
+		repo:      repo,
+		publisher: apartmentPublisher,
+		ServeMux:  http.DefaultServeMux,
+	}, nil
 }
 
-func (a *Application) StartApp() {
-	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/api/apartments", a.apartmentsHandler)
+func (a *Application) StartApp() error {
+	a.CustomHandleFunc("/api/apartments", a.apartmentsHandler)
 
-	err := http.ListenAndServe(":3000", nil)
-	if errors.Is(err, http.ErrServerClosed) {
-		fmt.Printf("server closed\n")
-	} else if err != nil {
-		fmt.Printf("error starting server: %s\n", err)
-		os.Exit(1)
+	err := http.ListenAndServe(":3000", a.ServeMux)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
 	}
+	return nil
 }
