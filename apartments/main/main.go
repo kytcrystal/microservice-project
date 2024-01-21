@@ -10,5 +10,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	application.StartApp()
+
+	if err := application.StartApp(); err != nil {
+		log.Fatal(err)
+	}
 }

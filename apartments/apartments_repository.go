@@ -96,18 +96,21 @@ func (a *ApartmentRepository) DeleteApartment(apartmentId string) {
 	fmt.Printf("Deleted apartment with id: %v\n", apartmentId)
 }
 
-func (a *ApartmentRepository) ListAllApartments() []Apartment {
+func (a *ApartmentRepository) ListAllApartments() ([]Apartment, error) {
 	apartment := Apartment{}
+
+	rows, err := a.db.Queryx("SELECT * FROM apartments")
+	if err != nil {
+		return nil, err
+	}
+
 	var apartmentList []Apartment
-
-	rows, _ := a.db.Queryx("SELECT * FROM apartments")
-
 	for rows.Next() {
 		err := rows.StructScan(&apartment)
 		if err != nil {
-			log.Fatalln(err)
+			return nil, err
 		}
 		apartmentList = append(apartmentList, apartment)
 	}
-	return apartmentList
+	return apartmentList, nil
 }
