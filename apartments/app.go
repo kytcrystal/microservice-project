@@ -16,15 +16,14 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("[apartmentsHandler] received new request", r.Method, r.URL.Path)
 
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Printf("got /api/apartments GET request\n")
 		w.Header().Set("Content-Type", "application/json")
-		allApartments := ListAllApartments()
+		allApartments := a.repo.ListAllApartments()
 		json.NewEncoder(w).Encode(&allApartments)
 	case http.MethodPost:
-		fmt.Printf("got /api/apartments POST request\n")
 		var apartment Apartment
 		err := json.NewDecoder(r.Body).Decode(&apartment)
 		if err != nil {
@@ -32,14 +31,13 @@ func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		apartment = SaveApartment(apartment)
+		apartment = a.repo.SaveApartment(apartment)
 		json.NewEncoder(w).Encode(&apartment)
 
 		message := apartment
 		a.publisher.SendMessage("apartment_created", message)
 
 	case http.MethodDelete:
-		fmt.Printf("got /api/apartments DELETE request\n")
 		var body struct {
 			Id string `db:"id" json:"id"`
 		}
@@ -48,9 +46,8 @@ func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		fmt.Println("here")
 		w.Header().Set("Content-Type", "application/json")
-		DeleteApartment(body.Id)
+		a.repo.DeleteApartment(body.Id)
 		json.NewEncoder(w).Encode(&body)
 
 		message := body
@@ -62,17 +59,24 @@ func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 type Application struct {
+	repo      *ApartmentRepository
 	publisher Publisher
 }
 
 func CreateApp() (*Application, error) {
+	repo, err := NewApartmentRepository()
+	if err != nil {
+		log.Println("[apartments_repository] Failed to connect to database", err)
+		return nil, err
+	}
+
 	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
 	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
 	if err != nil {
 		log.Println("[CreateApp] failed to setup rabbit mq publisher: will retry when first message is sent", err)
 		apartmentPublisher = &RetryPublisher{}
 	}
-	apartmentApplication := Application{publisher: apartmentPublisher}
+	apartmentApplication := Application{repo: repo, publisher: apartmentPublisher}
 	return &apartmentApplication, nil
 }
 

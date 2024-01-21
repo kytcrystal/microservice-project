@@ -11,61 +11,29 @@ import (
 )
 
 type Apartment struct {
-	Id             string `db:"id" json:"id"`
+	Id            string `db:"id" json:"id"`
 	ApartmentName string `db:"apartment_name" json:"apartment_name"`
-	Address        string `db:"address" json:"address"`
+	Address       string `db:"address" json:"address"`
 	NoiseLevel    string `db:"noise_level" json:"noise_level"`
-	Floor          string `db:"floor" json:"floor"`
+	Floor         string `db:"floor" json:"floor"`
 }
 
-var db *sqlx.DB = ConnectToDatabase()
+type ApartmentRepository struct {
+	db *sqlx.DB
+}
 
-var schema = `
-DROP TABLE IF EXISTS apartments;
-
-CREATE TABLE IF NOT EXISTS apartments (
-	id uuid primary key DEFAULT gen_random_uuid(),
-    apartment_name text,
-    address text,
-	noise_level text,
-	floor text
-);`
-
-func SaveApartment(apartment Apartment) Apartment {
-	apartment.Id = uuid.NewString()
-	_, err := db.NamedExec("INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+func NewApartmentRepository() (*ApartmentRepository, error) {
+	var db, err = ConnectToDatabase()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	fmt.Printf("Apartment added: %v\n", apartment)
-	return apartment
+
+	return &ApartmentRepository{
+		db: db,
+	}, nil
 }
 
-func DeleteApartment(apartmentId string) {
-	_, err := db.Exec("DELETE FROM apartments WHERE id = $1", apartmentId)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("Deleted apartment with id: %v\n", apartmentId)
-}
-
-func ListAllApartments() []Apartment {
-	apartment := Apartment{}
-	var apartmentList []Apartment
-
-	rows, _ := db.Queryx("SELECT * FROM apartments")
-
-	for rows.Next() {
-		err := rows.StructScan(&apartment)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		apartmentList = append(apartmentList, apartment)
-	}
-	return apartmentList
-}
-
-func ConnectToDatabase() *sqlx.DB {
+func ConnectToDatabase() (*sqlx.DB, error) {
 	connectionString := fmt.Sprintf(
 		"user=MicroserviceApp dbname=ApartmentDB sslmode=disable password=MicroserviceApp host=%s port=%s",
 		POSTGRES_HOST,
@@ -73,11 +41,21 @@ func ConnectToDatabase() *sqlx.DB {
 	)
 
 	db, err := sqlx.Connect("postgres", connectionString)
-	
+
 	if err != nil {
-		log.Fatalln("[apartments_repository] Failed to connect to database", err)
+		return nil, err
 	}
 
+	var schema = `
+	DROP TABLE IF EXISTS apartments;
+
+	CREATE TABLE IF NOT EXISTS apartments (
+		id uuid primary key DEFAULT gen_random_uuid(),
+		apartment_name text,
+		address text,
+		noise_level text,
+		floor text
+	);`
 	db.MustExec(schema)
 
 	tx := db.MustBegin()
@@ -87,9 +65,42 @@ func ConnectToDatabase() *sqlx.DB {
 	tx.Commit()
 
 	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println("Successfully Connected")
+		return nil, err
 	}
-	return db
+	log.Println("Successfully setup database connection")
+	return db, nil
+}
+
+func (a *ApartmentRepository) SaveApartment(apartment Apartment) Apartment {
+	apartment.Id = uuid.NewString()
+	_, err := a.db.NamedExec("INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("Apartment added: %v\n", apartment)
+	return apartment
+}
+
+func (a *ApartmentRepository) DeleteApartment(apartmentId string) {
+	_, err := a.db.Exec("DELETE FROM apartments WHERE id = $1", apartmentId)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("Deleted apartment with id: %v\n", apartmentId)
+}
+
+func (a *ApartmentRepository) ListAllApartments() []Apartment {
+	apartment := Apartment{}
+	var apartmentList []Apartment
+
+	rows, _ := a.db.Queryx("SELECT * FROM apartments")
+
+	for rows.Next() {
+		err := rows.StructScan(&apartment)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		apartmentList = append(apartmentList, apartment)
+	}
+	return apartmentList
 }
