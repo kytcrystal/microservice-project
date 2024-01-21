@@ -15,17 +15,17 @@ RUN go mod verify
 COPY . ./
 
 # Build app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /gateway main/main.go 
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /main main/main.go 
 
-RUN chmod +x /gateway
+RUN chmod +x /main
 
 FROM gcr.io/distroless/static-debian11
 
-COPY --from=golang /gateway .
+COPY --from=golang /main .
 COPY --from=golang /app/configuration-deploy.yaml .
 
 # Tell Docker which network port the container listens on
 EXPOSE 3333
  
 # Specify the executable command that runs when the container starts
-CMD [ "/gateway" ]
+CMD [ "/main" ]

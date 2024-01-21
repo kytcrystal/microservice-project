@@ -7,7 +7,11 @@ services:
       - "3000:3000"
     depends_on:
       - postgres-apartment
-      - rabbitmq
+    environment:
+      - PORT=3000
+      - POSTGRES_HOST=postgres-apartment
+      - POSTGRES_PORT=5432
+      - MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672/
   bookings:
     build: ./bookings
     ports:
