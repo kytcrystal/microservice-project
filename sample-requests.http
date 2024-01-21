@@ -17,8 +17,8 @@ POST http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "apartment_name": "Always Green", 
-    "address": "Bolzano",
+    "apartment_name": "Sometimes Green", 
+    "address": "Merano",
     "noise_level": "5",
     "floor": "1"
 }
@@ -30,7 +30,7 @@ DELETE http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "id": "2b56fca3-1502-40dc-bc60-9c74b8943169"
+    "id": "4c8958b1-ec62-441f-bfc5-604abd55e7d3"
 }
 
 
@@ -47,7 +47,7 @@ POST http://{{booking_service_url}}/api/bookings
 
 {
     "id": "{{$guid}}",
-    "apartment_id": "7360c491-79e6-4c7e-9f51-df62d36e9da9",
+    "apartment_id": "6d7525c5-e26b-4cba-864c-d988d0fddaa3",
     "user_id": "M47730",
     "start_date": "2025-03-01",
     "end_date": "2025-03-02"
@@ -60,7 +60,7 @@ Content-Type: application/json
 
 {
     "id": "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c",
-    "apartment_id": "d7675c3b-b97e-45a3-87a8-80b46b4d1162",
+    "apartment_id": "6d7525c5-e26b-4cba-864c-d988d0fddaa3",
     "user_id": "M47730",
     "start_date": "2023-11-01",
     "end_date": "2023-11-32"
@@ -73,7 +73,7 @@ DELETE http://{{booking_service_url}}/api/bookings
 Content-Type: application/json
 
 {
-    "id": "58c0faed-ad6d-4660-91ec-52f3301e5a97"
+    "id": "1e0cfb4e-0a11-48c8-a1f5-e82f5587818c"
 }
 
 
