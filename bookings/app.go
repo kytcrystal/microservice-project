@@ -15,8 +15,7 @@ type Application struct {
 }
 
 func NewApplication() (*Application, error) {
-	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
-	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
+	apartmentPublisher, err := NewPublisher(MQ_CONNECTION_STRING)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize rabbit mq: %w", err)
 	}
@@ -28,14 +27,12 @@ func NewApplication() (*Application, error) {
 }
 
 func (a *Application) Run() error {
-	var port = "3000"
-
 	a.CustomHandleFunc("/api/bookings", a.bookingsHandler)
 
 	StartListener()
 
-	log.Println("[app:run] starting booking service at port", port)
-	err := http.ListenAndServe(":"+port, a.ServeMux)
+	log.Println("[app:run] starting booking service at port", PORT)
+	err := http.ListenAndServe(":"+PORT, a.ServeMux)
 	return err
 }
 
@@ -97,9 +94,8 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 
 func StartListener() error {
 	log.Println("Starting Listener For Apartment Messages")
-	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
 
-	conn, err := amqp.Dial(RABBIT_MQ_CONNECTION_STRING)
+	conn, err := amqp.Dial(MQ_CONNECTION_STRING)
 	if err != nil {
 		return fmt.Errorf("failed to create rabbit mq connection: %w", err)
 	}
@@ -109,8 +105,7 @@ func StartListener() error {
 		return fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
 
-	const APARTMENTS_CREATED_QUEUE = "apartment_created"
-	createdMessages, err := createQueue(APARTMENTS_CREATED_QUEUE, channel)
+	createdMessages, err := createQueue(MQ_APPARTMENT_CREATED_EXCHANGE, MQ_APPARTMENT_CREATED_QUEUE, channel)
 	if err != nil {
 		return fmt.Errorf("failed to create apartment_created queue or channel: %w", err)
 	}
@@ -128,10 +123,8 @@ func StartListener() error {
 			SaveApartment(message)
 		}
 	}()
-	log.Printf("Server is listening to queue `%s`", APARTMENTS_CREATED_QUEUE)
 
-	const APARTMENTS_DELETED_QUEUE = "apartment_deleted"
-	deletedMessages, err := createQueue(APARTMENTS_DELETED_QUEUE, channel)
+	deletedMessages, err := createQueue(MQ_APPARTMENT_DELETED_EXCHANGE, MQ_APPARTMENT_DELETED_QUEUE, channel)
 	if err != nil {
 		return fmt.Errorf("failed to create apartment_deleted queue or channel: %w", err)
 	}
@@ -143,22 +136,23 @@ func StartListener() error {
 				log.Printf("[error] failed to parse message body: %v", err)
 				continue
 			}
-
 			log.Printf("Received a message: %+v", message)
-
 			DeleteApartment(message.Id)
 		}
 	}()
-	log.Printf("Server is listening to queue `%s`", APARTMENTS_DELETED_QUEUE)
 
 	return nil
 }
 
-func createQueue(queueName string, channel *amqp.Channel) (<-chan amqp.Delivery, error) {
+func createQueue(
+	exchangeName string,
+	queueName string,
+	channel *amqp.Channel,
+) (<-chan amqp.Delivery, error) {
 
 	queue, err := channel.QueueDeclare(
 		queueName, // name
-		false,     // durable
+		true,      // durable
 		false,     // delete when unused
 		false,     // exclusive
 		false,     // no-wait
@@ -167,6 +161,14 @@ func createQueue(queueName string, channel *amqp.Channel) (<-chan amqp.Delivery,
 	if err != nil {
 		return nil, err
 	}
+
+	err = channel.QueueBind(
+		queueName,    // queue name
+		"",           // routing key
+		exchangeName, // exchange
+		false,
+		nil,
+	)
 
 	msgs, err := channel.Consume(
 		queue.Name, // queue
@@ -182,6 +184,7 @@ func createQueue(queueName string, channel *amqp.Channel) (<-chan amqp.Delivery,
 		return nil, err
 	}
 
+	log.Printf("Server is listening to queue `%s` in exchange `%s`", queueName, exchangeName)
 	return msgs, nil
 }
 

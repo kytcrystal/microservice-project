@@ -14,6 +14,12 @@ services:
       - "3001:3000"
     depends_on:
       - postgres-booking
+    environment:
+      - PORT=3000
+      - POSTGRES_HOST=postgres-booking
+      - POSTGRES_PORT=5432
+      - MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672/
+      - APARTMENT_URL=http://apartments:3000
   gateway:
     build: ./gateway
     ports:

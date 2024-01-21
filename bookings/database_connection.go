@@ -2,7 +2,7 @@ package bookings
 
 import (
 	"encoding/json"
-	"io"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,7 +10,13 @@ import (
 )
 
 func ConnectToBookingDatabase() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=BookingDB sslmode=disable password=MicroserviceApp host=postgres-booking port=5432")
+	connectionString := fmt.Sprintf(
+		"user=MicroserviceApp dbname=BookingDB sslmode=disable password=MicroserviceApp host=%s port=%s",
+		POSTGRES_HOST,
+		POSTGRES_PORT,
+	)
+
+	db, err := sqlx.Connect("postgres", connectionString)
 	if err != nil {
 		log.Fatalln("[booking:connect_to_booking_database] Failed to connect to database", err)
 	}
@@ -37,26 +43,22 @@ func ConnectToBookingDatabase() *sqlx.DB {
 func refreshApartmentTable(db *sqlx.DB) {
 	tx := db.MustBegin()
 
-	response, err := http.Get("http://apartments:3000/api/apartments")
+	response, err := http.Get(APARTMENT_URL + "/api/apartments")
 	if err != nil {
 		log.Fatalf("fail to connect: %w", err)
 	}
-	apartments, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalf("fail to read body: %w", err)
-	}
 	var apartmentList []Apartment
-	err = json.Unmarshal(apartments, &apartmentList)
-	if err != nil {
+	if err = json.NewDecoder(response.Body).Decode(&apartmentList); err != nil {
 		log.Fatalf("fail to unmarshal apartment list: %w", err)
 	}
+
 	for _, apt := range apartmentList {
 		tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: apt.Id, Apartment_Name: apt.Apartment_Name})
-
 	}
 	// tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "3cc6f6be-e6ea-479a-a1e7-3fd6cab8ae3f", Apartment_Name: "Rarely Orange"})
 	// tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "d7675c3b-b97e-45a3-87a8-80b46b4d1162", Apartment_Name: "Often Blue"})
 	tx.Commit()
+	log.Println("Initialized database with the following apartments", apartmentList)
 }
 
 func refreshBookingTable(db *sqlx.DB) {
