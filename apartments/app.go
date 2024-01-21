@@ -19,7 +19,11 @@ func CreateApp() (*Application, error) {
 		return nil, err
 	}
 
-	apartmentPublisher, err := NewPublisher(MQ_CONNECTION_STRING)
+	apartmentPublisher, err := NewPublisher(
+		MQ_CONNECTION_STRING, 
+		MQ_APARTMENT_CREATED_EXCHANGE,
+		MQ_APARTMENT_DELETED_EXCHANGE,
+	)
 	if err != nil {
 		apartmentPublisher = &RetryPublisher{}
 	}

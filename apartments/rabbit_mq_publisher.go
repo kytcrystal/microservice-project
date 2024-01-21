@@ -36,7 +36,7 @@ type SimplePublisher struct {
 	channel    *amqp.Channel
 }
 
-func NewPublisher(dsn string) (Publisher, error) {
+func NewPublisher(dsn string, exchanges ...string) (Publisher, error) {
 	conn, err := amqp.Dial(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rabbit mq connection: %w", err)
@@ -47,10 +47,19 @@ func NewPublisher(dsn string) (Publisher, error) {
 		return nil, fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
 
-	return &SimplePublisher{
+	publisher := &SimplePublisher{
 		connection: conn,
 		channel:    channel,
-	}, nil
+	}
+
+	for _, exchange := range exchanges {
+		err := publisher.declareFanoutExchange(exchange)
+		if err != nil {
+			log.Println("failed to create exchange: will retry when message is sent", exchange, err)
+		}
+	}
+
+	return publisher, nil
 
 }
 
@@ -58,20 +67,11 @@ func (p *SimplePublisher) SendMessage(exchangeName string, message interface{}) 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := p.channel.ExchangeDeclare(
-		exchangeName, // name
-		"fanout",     // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
-	)
-	if err != nil {
+	if err := p.declareFanoutExchange(exchangeName); err != nil {
 		return fmt.Errorf("failed to declare exchange:  %w", err)
 	}
 
-	err = p.channel.PublishWithContext(ctx,
+	err := p.channel.PublishWithContext(ctx,
 		exchangeName, // exchange
 		"",           // routing key: empty cause we publish to the exchange
 		false,        // mandatory
@@ -87,6 +87,19 @@ func (p *SimplePublisher) SendMessage(exchangeName string, message interface{}) 
 
 	log.Println("succesfully sent message to to exchange", exchangeName, message)
 	return nil
+}
+
+func (p *SimplePublisher) declareFanoutExchange(exchangeName string) error {
+	err := p.channel.ExchangeDeclare(
+		exchangeName, // name
+		"fanout",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
+	)
+	return err
 }
 
 func (p *SimplePublisher) Close() error {
