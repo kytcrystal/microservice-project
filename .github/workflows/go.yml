@@ -21,11 +21,11 @@ jobs:
       with:
         go-version: '1.21.4'
 
-    - name: Build Appartments
-      run: go build -v ./appartments
+    - name: Build Apartments
+      run: go build -v ./apartments
 
     - name: Test Appartments
-      run: go test -v ./appartments
+      run: go test -v ./apartments
     
     - name: Build Bookings
       run: go build -v ./bookings
