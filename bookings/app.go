@@ -30,67 +30,13 @@ func NewApplication() (*Application, error) {
 func (a *Application) Run() error {
 	a.CustomHandleFunc("/api/bookings", a.bookingsHandler)
 
-	StartListener()
+	if err := StartListener(); err != nil {
+		log.Println("[app:run] Failed to startup booking listeners", err)
+		return err
+	}
 
 	log.Println("[app:run] starting booking service at port", PORT)
-	err := http.ListenAndServe(":"+PORT, a.ServeMux)
-	return err
-}
-
-func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (any, error) {
-	log.Println("[bookingsHandler] received request: ", r.Method, r.URL.Path)
-	switch r.Method {
-
-	case http.MethodGet:
-		return ListAllBookings()
-
-	case http.MethodPost:
-		var booking Booking
-		err := json.NewDecoder(r.Body).Decode(&booking)
-		if err != nil {
-			return nil, err
-		}
-		bookingCreated, err := CreateBooking(booking)
-		if err != nil {
-			return nil, err
-		}
-		err = a.publisher.SendMessage(MQ_BOOKING_CREATED_EXCHANGE, BookingCreatedEvent{bookingCreated})
-		if err != nil {
-			return nil, err
-		}
-		return bookingCreated, nil
-	case http.MethodDelete:
-		var body struct{ ID string }
-		err := json.NewDecoder(r.Body).Decode(&body)
-		if err != nil {
-			return nil, err
-		}
-		if err := CancelBooking(body.ID); err != nil {
-			return nil, err
-		}
-		err = a.publisher.SendMessage(MQ_BOOKING_CANCELLED_EXCHANGE, BookingCancelledEvent{body.ID})
-		if err != nil {
-			return nil, err
-		}
-		return body, nil
-	case http.MethodPatch:
-		var booking Booking
-		err := json.NewDecoder(r.Body).Decode(&booking)
-		if err != nil {
-			return nil, err
-		}
-		updatedBooking, err := ChangeBooking(booking)
-		if err != nil {
-			return nil, err
-		}
-		err = a.publisher.SendMessage("booking_updated", BookingUpdatedEvent{updatedBooking})
-		if err != nil {
-			return nil, err
-		}
-		return updatedBooking, nil
-	default:
-		return nil, fmt.Errorf("method not allowed")
-	}
+	return http.ListenAndServe(":"+PORT, a.ServeMux)
 }
 
 func StartListener() error {
@@ -194,14 +140,14 @@ func createQueue(
 	return msgs, nil
 }
 
-func (a *Application) CustomHandleFunc(pattern string, handle func(http.ResponseWriter, *http.Request) (any, error)) {
+func (a *Application) CustomHandleFunc(pattern string, handle func(*http.Request) (any, error)) {
 	a.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		value, err := handle(w, r)
+		value, err := handle(r)
 		if err != nil {
 			log.Println("Encountered error while handling request", r.Method, r.URL.Path, err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			value = struct{ Error string }{err.Error()}
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		json.NewEncoder(w).Encode(value)
 	})
