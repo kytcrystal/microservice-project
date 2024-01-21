@@ -55,8 +55,6 @@ func refreshApartmentTable(db *sqlx.DB) {
 	for _, apt := range apartmentList {
 		tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: apt.Id, Apartment_Name: apt.Apartment_Name})
 	}
-	// tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "3cc6f6be-e6ea-479a-a1e7-3fd6cab8ae3f", Apartment_Name: "Rarely Orange"})
-	// tx.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &Apartment{Id: "d7675c3b-b97e-45a3-87a8-80b46b4d1162", Apartment_Name: "Often Blue"})
 	tx.Commit()
 	log.Println("Initialized database with the following apartments", apartmentList)
 }

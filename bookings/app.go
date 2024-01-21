@@ -105,12 +105,13 @@ func StartListener() error {
 		return fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
 
-	createdMessages, err := createQueue(MQ_APPARTMENT_CREATED_EXCHANGE, MQ_APPARTMENT_CREATED_QUEUE, channel)
+	createdMessages, err := createQueue(MQ_APARTMENT_CREATED_EXCHANGE, MQ_APARTMENT_CREATED_QUEUE, channel)
 	if err != nil {
 		return fmt.Errorf("failed to create apartment_created queue or channel: %w", err)
 	}
 
 	go func() {
+		log.Println("initialized goroutine that process created messages: ", createdMessages)
 		for d := range createdMessages {
 			var message Apartment
 			if err := json.Unmarshal(d.Body, &message); err != nil {
@@ -124,7 +125,7 @@ func StartListener() error {
 		}
 	}()
 
-	deletedMessages, err := createQueue(MQ_APPARTMENT_DELETED_EXCHANGE, MQ_APPARTMENT_DELETED_QUEUE, channel)
+	deletedMessages, err := createQueue(MQ_APARTMENT_DELETED_EXCHANGE, MQ_APARTMENT_DELETED_QUEUE, channel)
 	if err != nil {
 		return fmt.Errorf("failed to create apartment_deleted queue or channel: %w", err)
 	}
@@ -169,6 +170,10 @@ func createQueue(
 		false,
 		nil,
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	msgs, err := channel.Consume(
 		queue.Name, // queue

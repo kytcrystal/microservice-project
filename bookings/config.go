@@ -13,11 +13,11 @@ var (
 	PORT          = GetOrElse("PORT", "3001")
 	APARTMENT_URL = GetOrElse("APARTMENT_URL", "http://localhost:3000")
 
-	MQ_CONNECTION_STRING           = GetOrElse("MQ_CONNECTION_STRING", "amqp://guest:guest@localhost:5672/")
-	MQ_APPARTMENT_CREATED_EXCHANGE = "appartment_created"
-	MQ_APPARTMENT_CREATED_QUEUE    = "appartment_created"
-	MQ_APPARTMENT_DELETED_EXCHANGE = "appartment_deleted"
-	MQ_APPARTMENT_DELETED_QUEUE    = "appartment_deleted"
+	MQ_CONNECTION_STRING          = GetOrElse("MQ_CONNECTION_STRING", "amqp://guest:guest@localhost:5672/")
+	MQ_APARTMENT_CREATED_EXCHANGE = "apartment_created"
+	MQ_APARTMENT_CREATED_QUEUE    = "booking-service.apartment_created"
+	MQ_APARTMENT_DELETED_EXCHANGE = "apartment_deleted"
+	MQ_APARTMENT_DELETED_QUEUE    = "booking-service.apartment_deleted"
 )
 
 func GetOrElse(key string, d string) string {

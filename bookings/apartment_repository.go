@@ -25,7 +25,13 @@ CREATE TABLE IF NOT EXISTS apartments (
 );`
 
 func SaveApartment(apartment Apartment) Apartment {
-	_, err := apartmentDB.NamedExec("INSERT INTO apartments (id, apartment_name) VALUES (:id, :apartment_name)", &apartment)
+	_, err := apartmentDB.NamedExec(
+		`INSERT INTO apartments (id, apartment_name) 
+			VALUES (:id, :apartment_name)
+		 ON CONFLICT DO NOTHING
+			`,
+		&apartment,
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
