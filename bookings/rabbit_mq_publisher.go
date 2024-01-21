@@ -4,18 +4,39 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Publisher struct {
+type Publisher interface {
+	SendMessage(queueName string, message interface{}) error
+}
+
+type RetryPublisher struct {
+	Publisher
+}
+
+func (p *RetryPublisher) SendMessage(exchangeName string, message interface{}) error {
+	if p.Publisher == nil {
+		log.Println("[RetryPublisher] rabbit mq publisher was not set up correcty, will attempt to create it now")
+		publisher, err := NewPublisher(MQ_CONNECTION_STRING)
+		if err != nil {
+			log.Println("[RetryPublisher] failed to setup publisher, message will be skipped", exchangeName, message)
+			return err
+		}
+		p.Publisher = publisher
+	}
+	return p.Publisher.SendMessage(exchangeName, message)
+}
+
+type SimplePublisher struct {
 	connection *amqp.Connection
 	channel    *amqp.Channel
 }
 
-func NewPublisher(dsn string) (*Publisher, error) {
-
+func NewPublisher(dsn string) (Publisher, error) {
 	conn, err := amqp.Dial(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rabbit mq connection: %w", err)
@@ -26,32 +47,33 @@ func NewPublisher(dsn string) (*Publisher, error) {
 		return nil, fmt.Errorf("failed to create rabbit mq channel: %w", err)
 	}
 
-	return &Publisher{
+	return &SimplePublisher{
 		connection: conn,
 		channel:    channel,
 	}, nil
 
 }
 
-func (p *Publisher) SendMessage(queueName string, message interface{}) error {
+func (p *SimplePublisher) SendMessage(exchangeName string, message interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := p.channel.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+	err := p.channel.ExchangeDeclare(
+		exchangeName, // name
+		"fanout",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
 	)
 	if err != nil {
-		return  fmt.Errorf("queue does not exist or is misconfigured: %v", err)
+		return fmt.Errorf("failed to declare exchange:  %w", err)
 	}
 
 	err = p.channel.PublishWithContext(ctx,
-		"",           // exchange
-		queueName, // routing key
+		exchangeName, // exchange
+		"",           // routing key: empty cause we publish to the exchange
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
@@ -62,10 +84,12 @@ func (p *Publisher) SendMessage(queueName string, message interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to send message: %w", err)
 	}
+
+	log.Println("succesfully sent message to to exchange", exchangeName, message)
 	return nil
 }
 
-func (p *Publisher) Close() error {
+func (p *SimplePublisher) Close() error {
 	p.channel.Close()
 	p.connection.Close()
 	return nil

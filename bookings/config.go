@@ -18,6 +18,9 @@ var (
 	MQ_APARTMENT_CREATED_QUEUE    = "booking-service.apartment_created"
 	MQ_APARTMENT_DELETED_EXCHANGE = "apartment_deleted"
 	MQ_APARTMENT_DELETED_QUEUE    = "booking-service.apartment_deleted"
+	MQ_BOOKING_CREATED_EXCHANGE   = "booking_created"
+	MQ_BOOKING_CANCELLED_EXCHANGE = "booking_cancelled"
+	MQ_BOOKING_UPDATED_EXCHANGE   = "booking_updated"
 )
 
 func GetOrElse(key string, d string) string {
