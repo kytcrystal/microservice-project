@@ -22,19 +22,19 @@ jobs:
         go-version: '1.21.4'
 
     - name: Build Apartments
-      run: go build -v ./apartments
+      run: go build -v ./apartments/...
 
     - name: Test Appartments
-      run: go test -v ./apartments
+      run: go test -v ./apartments/...
     
     - name: Build Bookings
-      run: go build -v ./bookings
+      run: go build -v ./bookings/...
 
     - name: Test Bookings
-      run: go test -v ./bookings
+      run: go test -v ./bookings/...
   
     - name: Build Gateway
-      run: go build -v ./gateway
+      run: go build -v ./gateway/...
 
     - name: Test Bookings
-      run: go test -v ./gateway
+      run: go test -v ./gateway/...
