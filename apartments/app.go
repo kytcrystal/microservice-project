@@ -39,7 +39,9 @@ func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) 
 
 	case http.MethodDelete:
 		fmt.Printf("got /api/apartments DELETE request\n")
-		var body struct{ Id string }
+		var body struct {
+			Id string `db:"id" json:"id"`
+		}
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
