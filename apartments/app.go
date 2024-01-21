@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -61,14 +62,15 @@ func (a *Application) apartmentsHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 type Application struct {
-	publisher *Publisher
+	publisher Publisher
 }
 
 func CreateApp() (*Application, error) {
 	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@rabbitmq:5672/"
 	apartmentPublisher, err := NewPublisher(RABBIT_MQ_CONNECTION_STRING)
 	if err != nil {
-		return nil, err
+		log.Println("[CreateApp] failed to setup rabbit mq publisher: will retry when first message is sent", err)
+		apartmentPublisher = &RetryPublisher{}
 	}
 	apartmentApplication := Application{publisher: apartmentPublisher}
 	return &apartmentApplication, nil

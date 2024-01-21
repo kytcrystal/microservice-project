@@ -66,7 +66,14 @@ func ListAllApartments() []Apartment {
 }
 
 func ConnectToDatabase() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=MicroserviceApp dbname=ApartmentDB sslmode=disable password=MicroserviceApp host=postgres-apartment")
+	connectionString := fmt.Sprintf(
+		"user=MicroserviceApp dbname=ApartmentDB sslmode=disable password=MicroserviceApp host=%s port=%s",
+		POSTGRES_HOST,
+		POSTGRES_PORT,
+	)
+
+	db, err := sqlx.Connect("postgres", connectionString)
+	
 	if err != nil {
 		log.Fatalln("[apartments_repository] Failed to connect to database", err)
 	}
