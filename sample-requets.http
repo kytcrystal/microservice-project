@@ -17,8 +17,8 @@ POST http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "apartment_name": "Always White PARAPA", 
-    "address": "Trento",
+    "apartment_name": "Always Green", 
+    "address": "Bolzano",
     "noise_level": "5",
     "floor": "1"
 }
@@ -30,7 +30,7 @@ DELETE http://{{apartment_service_url}}/api/apartments
 Content-Type: application/json
 
 {
-    "id": "7948f138-6eee-4ae9-8812-413d191b88f5"
+    "id": "2b56fca3-1502-40dc-bc60-9c74b8943169"
 }
 
 

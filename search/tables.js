@@ -25,7 +25,7 @@ function createTable(db) {
       end_date text
     );`;
   db.exec(createBookingsTable);
-  refreshBookings(db);
+  // refreshBookings(db);
 }
 
 async function refreshApartments(db) {
@@ -58,18 +58,25 @@ async function refreshBookings(db) {
   insertMany(response.data);
 }
 
+function createApartment(db, apartment) {
+  const insert = db.prepare(
+    "INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (@id, @apartment_name, @address, @noise_level, @floor)"
+  );
+  insert.run(apartment);
+}
+
+function deleteApartment(db, apartment) {
+  const insert = db.prepare(
+    "DELETE FROM apartments WHERE id = @id"
+  );
+  insert.run(apartment);
+}
+
 function listAll(db, table) {
   const stmt = db.prepare("SELECT * FROM " + table);
   const row = stmt.all();
   return row;
 }
-
-// function createApartment(db, apartment) {
-//   const insert = db.prepare(
-//     "INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (@id, @apartment_name, @address, @noise_level, @floor)"
-//   );
-//   db.run(insert, apartment);
-// }
 
 function searchAvailableApartments(db, fromDate, toDate) {
   const stmt = db.prepare(`SELECT * FROM apartments WHERE id NOT IN 
@@ -85,6 +92,8 @@ function searchAvailableApartments(db, fromDate, toDate) {
 
 module.exports = {
   createTable: createTable,
+  createApartment: createApartment,
+  deleteApartment: deleteApartment,
   listAll: listAll,
   searchAvailableApartments: searchAvailableApartments,
 };
