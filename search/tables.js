@@ -1,3 +1,4 @@
+const config = require("./config");
 const axios = require("axios");
 
 function createTable(db) {
@@ -36,8 +37,7 @@ function createTable(db) {
 }
 
 async function refreshApartments(db) {
-  const APARTMENT_URL = "http://localhost:3000/api/apartments";
-  const response = await axios.get(APARTMENT_URL);
+  const response = await axios.get(config.APARTMENT_URL + "/api/apartments");
 
   const insert = db.prepare(
     `INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
@@ -53,8 +53,7 @@ async function refreshApartments(db) {
 }
 
 async function refreshBookings(db) {
-  const BOOKING_URL = "http://localhost:3001/api/bookings";
-  const response = await axios.get(BOOKING_URL);
+  const response = await axios.get(config.BOOKING_URL + "/api/bookings");
 
   const insert = db.prepare(
     `INSERT INTO bookings (id, apartment_id, user_id, start_date, end_date) 
@@ -79,7 +78,7 @@ function createApartment(db, apartment) {
 }
 
 function deleteApartment(db, apartment) {
-  const insert = db.prepare("DELETE FROM apartments WHERE id = @id CASCADE");
+  const insert = db.prepare("DELETE FROM apartments WHERE id = @id");
   insert.run(apartment);
 }
 

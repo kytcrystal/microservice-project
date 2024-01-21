@@ -24,6 +24,15 @@ services:
       - POSTGRES_PORT=5432
       - MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672/
       - APARTMENT_URL=http://apartments:3000
+  search:
+    build: ./search
+    ports:
+      - "3002:3000"
+    environment:
+      - PORT=3000
+      - MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672/
+      - APARTMENT_URL=http://apartments:3000
+      - BOOKING_URL=http://bookings:3000
   gateway:
     build: ./gateway
     ports:

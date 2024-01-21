@@ -4,6 +4,7 @@ const express = require("express");
 const amqp = require("amqplib");
 
 const tables = require("./tables");
+const config = require("./config");
 
 const app = express();
 
@@ -31,39 +32,31 @@ app.get("/api/search/bookings", (req, res) => {
 async function startListener() {
 	console.log("Starting Listener For Apartment Messages")
 
-	const RABBIT_MQ_CONNECTION_STRING = "amqp://guest:guest@localhost:5672/"
-  const connection = await amqp.connect(RABBIT_MQ_CONNECTION_STRING);
+  const connection = await amqp.connect(config.MQ_CONNECTION_STRING);
   const channel = await connection.createChannel();
 
-  const MQ_APARTMENT_CREATED_EXCHANGE = "apartment_created";
-	const MQ_APARTMENT_CREATED_QUEUE    = "search-service.apartment_created";
-  await messageReceiver(channel, MQ_APARTMENT_CREATED_EXCHANGE, MQ_APARTMENT_CREATED_QUEUE, tables.createApartment);
+  await messageReceiver(channel, config.MQ_APARTMENT_CREATED_EXCHANGE, 
+    config.MQ_APARTMENT_CREATED_QUEUE, tables.createApartment);
 
-  const MQ_APARTMENT_DELETED_EXCHANGE = "apartment_deleted";
-	const MQ_APARTMENT_DELETED_QUEUE    = "search-service.apartment_deleted";
-  await messageReceiver(channel, MQ_APARTMENT_DELETED_EXCHANGE, MQ_APARTMENT_DELETED_QUEUE, tables.deleteApartment);
+  await messageReceiver(channel, config.MQ_APARTMENT_DELETED_EXCHANGE, 
+    config.MQ_APARTMENT_DELETED_QUEUE, tables.deleteApartment);
 
-  const MQ_BOOKING_CREATED_EXCHANGE = "booking_created";
-	const MQ_BOOKING_CREATED_QUEUE    = "search-service.booking_created";
-  await messageReceiver(channel, MQ_BOOKING_CREATED_EXCHANGE, MQ_BOOKING_CREATED_QUEUE, tables.createBooking);
+  await messageReceiver(channel, config.MQ_BOOKING_CREATED_EXCHANGE, 
+    config.MQ_BOOKING_CREATED_QUEUE, tables.createBooking);
 
-  const MQ_BOOKING_CANCELLED_EXCHANGE = "booking_cancelled";
-	const MQ_BOOKING_CANCELLED_QUEUE    = "search-service.booking_cancelled";
-  await messageReceiver(channel, MQ_BOOKING_CANCELLED_EXCHANGE, MQ_BOOKING_CANCELLED_QUEUE, tables.cancelBooking);
+  await messageReceiver(channel, config.MQ_BOOKING_CANCELLED_EXCHANGE, 
+    config.MQ_BOOKING_CANCELLED_QUEUE, tables.cancelBooking);
 
-  const MQ_BOOKING_UPDATED_EXCHANGE = "booking_updated";
-	const MQ_BOOKING_UPDATED_QUEUE    = "search-service.booking_updated";
-  await messageReceiver(channel, MQ_BOOKING_UPDATED_EXCHANGE, MQ_BOOKING_UPDATED_QUEUE, tables.updateBooking);
+  await messageReceiver(channel, config.MQ_BOOKING_UPDATED_EXCHANGE, 
+    config.MQ_BOOKING_UPDATED_QUEUE, tables.updateBooking);
 }
 
 tables.createTable(db);
 startListener();
 
-const port = 3002;
-
 // Start the server and listen for incoming requests
-app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}`);
+app.listen(config.PORT, () => {
+  console.log(`Server listening on http://localhost:${config.PORT}`);
 });
 
 async function messageReceiver(channel, exchange, queue, actOnMessage) {
