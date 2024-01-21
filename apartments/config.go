@@ -14,7 +14,7 @@ var (
 
 	MQ_CONNECTION_STRING           = GetOrElse("MQ_CONNECTION_STRING", "amqp://guest:guest@localhost:5672/")
 	MQ_APPARTMENT_CREATED_EXCHANGE = "apartment_created"
-	MQ_APPARTMENT_DELETED_EXCHANGE = "appartment_deleted"
+	MQ_APPARTMENT_DELETED_EXCHANGE = "apartment_deleted"
 )
 
 func GetOrElse(key string, d string) string {
