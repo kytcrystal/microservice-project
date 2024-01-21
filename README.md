@@ -20,8 +20,8 @@
 - [ ] Search service -> javascript
   - [X] needs to have a DB with apartments
   - [X] needs to have a DB with bookings
-  - [ ] needs to know which apartment exists and are available
-  - [ ] should be able to search apartments using "from" date and "to" date
+  - [X] needs to know which apartment exists and are available
+  - [X] should be able to search apartments using "from" date and "to" date
   - [ ] register for booking events
   - [ ] register for apartment events
   - [ ] Direct call from Search service to Apartment service, if apartments table is empty
@@ -31,8 +31,8 @@
   - [x] Apartments
   - [x] Bookings
   - [ ] Search
-  - [ ] Gateway
-  - [ ] Configuration for yaml file for Gateway
+  - [X] Gateway
+  - [X] Configuration for yaml file for Gateway
 - [ ] Implement event sourcing for Booking service
 - [ ] Implement NoSQL DB for apartments DB
 - [ ] In apartment, when adding new apartment, can check if id is passed in correctly. If yes, use that. If not, generate new UUID
