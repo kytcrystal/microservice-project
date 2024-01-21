@@ -18,17 +18,17 @@ type RetryPublisher struct {
 	Publisher
 }
 
-func (p *RetryPublisher) SendMessage(queueName string, message interface{}) error {
+func (p *RetryPublisher) SendMessage(exchangeName string, message interface{}) error {
 	if p.Publisher == nil {
 		log.Println("[RetryPublisher] rabbit mq publisher was not set up correcty, will attempt to create it now")
 		publisher, err := NewPublisher(MQ_CONNECTION_STRING)
 		if err != nil {
-			log.Println("[RetryPublisher] failed to setup publisher, message will be skipped", queueName, message)
+			log.Println("[RetryPublisher] failed to setup publisher, message will be skipped", exchangeName, message)
 			return err
 		}
 		p.Publisher = publisher
 	}
-	return p.Publisher.SendMessage(queueName, message)
+	return p.Publisher.SendMessage(exchangeName, message)
 }
 
 type SimplePublisher struct {
