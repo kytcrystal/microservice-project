@@ -35,18 +35,14 @@ async function startListener() {
   const connection = await amqp.connect(RABBIT_MQ_CONNECTION_STRING);
   const channel = await connection.createChannel();
 
-  process.once("SIGINT", async () => {
-    await channel.close();
-    await connection.close();
-  });
+  const MQ_APARTMENT_CREATED_EXCHANGE = "apartment_created";
+	const MQ_APARTMENT_CREATED_QUEUE    = "search-service.apartment_created";
+  await messageReceiver(channel, MQ_APARTMENT_CREATED_EXCHANGE, MQ_APARTMENT_CREATED_QUEUE, tables.createApartment);
 
-	const APARTMENTS_CREATED_QUEUE = "apartment_created"
-  await messageReceiver(channel, APARTMENTS_CREATED_QUEUE, tables.createApartment);
-	const APARTMENTS_DELETED_QUEUE = "apartment_deleted"
-  await messageReceiver(channel, APARTMENTS_DELETED_QUEUE, tables.deleteApartment);
+  const MQ_APARTMENT_DELETED_EXCHANGE = "apartment_deleted";
+	const MQ_APARTMENT_DELETED_QUEUE    = "search-service.apartment_deleted";
+  await messageReceiver(channel, MQ_APARTMENT_DELETED_EXCHANGE, MQ_APARTMENT_DELETED_QUEUE, tables.deleteApartment);
 }
-
-
 
 tables.createTable(db);
 startListener();
@@ -58,19 +54,24 @@ app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
 });
 
-async function messageReceiver(channel, queue, actOnMessage) {
-  await channel.assertQueue(queue, { durable: false });
-  await channel.consume(
-    queue,
-    (message) => {
-      if (message) {
-        console.log(
-          "Received a message: '%s'",
-          JSON.parse(message.content.toString())
-        );
-        actOnMessage(db, JSON.parse(message.content.toString()))
+async function messageReceiver(channel, exchange, queue, actOnMessage) {
+  
+  await channel.assertExchange(exchange, 'fanout', {
+    durable: true
+  });
+
+  await channel.assertQueue(queue, {
+    exclusive: true
+  })
+
+  await channel.bindQueue(queue, exchange, '');
+
+  channel.consume(queue, function(msg) {
+    if(msg.content) {
+        console.log("Received a message: '%s'", msg.content.toString());
+        actOnMessage(db, JSON.parse(msg.content.toString()))
       }
-    },
-    { noAck: true }
-  );
+  }, {
+    noAck: true
+  });
 }
