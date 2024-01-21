@@ -1,0 +1,73 @@
+@api_gatway_url = localhost:3333
+
+
+######################### Apartment Service ###########################
+
+### Get all apartments in apartments service
+
+GET http://{{api_gatway_url}}/api/apartments
+
+
+### Create new apartment in apartments service
+
+POST http://{{api_gatway_url}}/api/apartments
+Content-Type: application/json
+
+{
+    "id": "82d2a161-1769-4b22-9dad-b6ac0a8048cf",
+    "apartment_name": "Sometimes Green", 
+    "address": "Merano",
+    "noise_level": "5",
+    "floor": "1"
+}
+
+
+######################### Booking Service ###########################
+
+### Get all bookings from bookings service
+
+GET http://{{api_gatway_url}}/api/bookings
+
+
+### Create a booking in bookings service
+
+POST http://{{api_gatway_url}}/api/bookings
+
+{
+    "id": "29ee8366-9e96-48a6-a5c6-d6f43d1482da",
+    "apartment_id": "82d2a161-1769-4b22-9dad-b6ac0a8048cf",
+    "user_id": "M47730",
+    "start_date": "2024-03-01",
+    "end_date": "2024-03-02"
+}
+
+######################### Search Service ###########################
+
+### Search all apartments in search service
+
+GET http://{{api_gatway_url}}/api/search/apartments
+
+
+### Search free apartments in search service
+
+GET http://{{api_gatway_url}}/api/search/available?from=2024-03-01&to=2024-03-01
+
+
+### Delete booking in bookings service
+
+DELETE http://{{api_gatway_url}}/api/bookings
+Content-Type: application/json
+
+{
+    "id": "29ee8366-9e96-48a6-a5c6-d6f43d1482da"
+}
+
+
+### Delete apartment in apartments service
+
+DELETE http://{{api_gatway_url}}/api/apartments
+Content-Type: application/json
+
+{
+    "id": "82d2a161-1769-4b22-9dad-b6ac0a8048cf"
+}

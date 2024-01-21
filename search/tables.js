@@ -2,12 +2,11 @@ const config = require("./config");
 const axios = require("axios");
 
 function createTable(db) {
-
   const dropTables = `
     DROP TABLE IF EXISTS bookings;
     DROP TABLE IF EXISTS apartments;
   `;
-  
+
   const createApartmentsTable = `
     CREATE TABLE IF NOT EXISTS apartments (
         id uuid primary key,
@@ -78,8 +77,8 @@ function createApartment(db, apartment) {
 }
 
 function deleteApartment(db, apartment) {
-  const insert = db.prepare("DELETE FROM apartments WHERE id = @id");
-  insert.run(apartment);
+  db.prepare(`DELETE FROM bookings WHERE apartment_id = @id;`).run(apartment);
+  db.prepare(`DELETE FROM apartments WHERE id = @id;`).run(apartment);
 }
 
 function createBooking(db, booking) {

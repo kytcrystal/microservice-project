@@ -72,10 +72,14 @@ async function messageReceiver(channel, exchange, queue, actOnMessage) {
   await channel.bindQueue(queue, exchange, '');
 
   channel.consume(queue, function(msg) {
+    try {
     if(msg.content) {
         console.log("Received a message: '%s'", msg.content.toString());
         actOnMessage(db, JSON.parse(msg.content.toString()))
       }
+    } catch(err) {
+      console.error(`error while processing message from ${queue}: ${err}`, msg)
+    }
   }, {
     noAck: true
   });

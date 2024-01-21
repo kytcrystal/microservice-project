@@ -80,7 +80,7 @@ func (a *ApartmentRepository) SaveApartment(apartment Apartment) Apartment {
 		apartment.Id = uuid.NewString()
 	}
 	_, err := a.db.NamedExec(`INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
-		VALUES (:id, :apartment_name, :address, :noise_level, :floor)`, &apartment)
+		VALUES (:id, :apartment_name, :address, :noise_level, :floor) ON CONFLICT DO NOTHING`, &apartment)
 	if err != nil {
 		log.Fatalln(err)
 	}

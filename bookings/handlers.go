@@ -33,7 +33,7 @@ func (a *Application) createBooking(r *http.Request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = a.publisher.SendMessage(MQ_BOOKING_CREATED_EXCHANGE, BookingCreatedEvent{bookingCreated})
+	err = a.publisher.SendMessage(MQ_BOOKING_CREATED_EXCHANGE, bookingCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (a *Application) createBooking(r *http.Request) (any, error) {
 }
 
 func (a *Application) deleteBooking(r *http.Request) (any, error) {
-	var body struct{ ID string }
+	var body struct{ ID string `json:"id"`}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (a *Application) deleteBooking(r *http.Request) (any, error) {
 	if err := CancelBooking(body.ID); err != nil {
 		return nil, err
 	}
-	err = a.publisher.SendMessage(MQ_BOOKING_CANCELLED_EXCHANGE, BookingCancelledEvent{body.ID})
+	err = a.publisher.SendMessage(MQ_BOOKING_CANCELLED_EXCHANGE, body)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (a *Application) updateBooking(r *http.Request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = a.publisher.SendMessage("booking_updated", BookingUpdatedEvent{updatedBooking})
+	err = a.publisher.SendMessage("booking_updated", updatedBooking)
 	if err != nil {
 		return nil, err
 	}
