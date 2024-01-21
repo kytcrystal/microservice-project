@@ -37,21 +37,35 @@ func (p *Publisher) SendMessage(queueName string, message interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := p.channel.QueueDeclare(
+	var exchangeName = queueName
+	err := p.channel.ExchangeDeclare(
 		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
+		"fanout",  // type
+		true,      // durable
+		false,     // auto-deleted
+		false,     // internal
 		false,     // no-wait
 		nil,       // arguments
 	)
 	if err != nil {
-		return  fmt.Errorf("queue does not exist or is misconfigured: %v", err)
+		return fmt.Errorf("failed to declare exchange:  %w", err)
 	}
 
+	// _, err = p.channel.QueueDeclare(
+	// 	queueName, // name
+	// 	false,     // durable
+	// 	false,     // delete when unused
+	// 	false,     // exclusive
+	// 	false,     // no-wait
+	// 	nil,       // arguments
+	// )
+	// if err != nil {
+	// 	return fmt.Errorf("queue does not exist or is misconfigured: %v", err)
+	// }
+
 	err = p.channel.PublishWithContext(ctx,
-		"",           // exchange
-		queueName, // routing key
+		exchangeName, // exchange
+		"",           // routing key: empty cause we publish to the exchange
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
