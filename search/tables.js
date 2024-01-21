@@ -72,6 +72,28 @@ function deleteApartment(db, apartment) {
   insert.run(apartment);
 }
 
+function createBooking(db, booking) {
+  const insert = db.prepare(
+    "INSERT INTO bookings (id, apartment_id, user_id, start_date, end_date) VALUES (@id, @apartment_id, @user_id, @start_date, @end_date)"
+  );
+  insert.run(booking);
+}
+
+function cancelBooking(db, booking) {
+  const insert = db.prepare(
+    "DELETE FROM bookings WHERE id = @id"
+  );
+  insert.run(booking);
+}
+
+function updateBooking(db, booking) {
+  const insert = db.prepare(
+    `UPDATE bookings SET (id, apartment_id, user_id, start_date, end_date) 
+      VALUES (@id, @apartment_id, @user_id, @start_date, @end_date) WHERE id = @id`
+  );
+  insert.run(booking);
+}
+
 function listAll(db, table) {
   const stmt = db.prepare("SELECT * FROM " + table);
   const row = stmt.all();
@@ -94,6 +116,9 @@ module.exports = {
   createTable: createTable,
   createApartment: createApartment,
   deleteApartment: deleteApartment,
+  createBooking: createBooking,
+  cancelBooking: cancelBooking,
+  updateBooking: updateBooking,
   listAll: listAll,
   searchAvailableApartments: searchAvailableApartments,
 };

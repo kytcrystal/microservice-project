@@ -42,6 +42,18 @@ async function startListener() {
   const MQ_APARTMENT_DELETED_EXCHANGE = "apartment_deleted";
 	const MQ_APARTMENT_DELETED_QUEUE    = "search-service.apartment_deleted";
   await messageReceiver(channel, MQ_APARTMENT_DELETED_EXCHANGE, MQ_APARTMENT_DELETED_QUEUE, tables.deleteApartment);
+
+  const MQ_BOOKING_CREATED_EXCHANGE = "booking_created";
+	const MQ_BOOKING_CREATED_QUEUE    = "search-service.booking_created";
+  await messageReceiver(channel, MQ_BOOKING_CREATED_EXCHANGE, MQ_BOOKING_CREATED_QUEUE, tables.createBooking);
+
+  const MQ_BOOKING_CANCELLED_EXCHANGE = "booking_cancelled";
+	const MQ_BOOKING_CANCELLED_QUEUE    = "search-service.booking_cancelled";
+  await messageReceiver(channel, MQ_BOOKING_CANCELLED_EXCHANGE, MQ_BOOKING_CANCELLED_QUEUE, tables.cancelBooking);
+
+  const MQ_BOOKING_UPDATED_EXCHANGE = "booking_updated";
+	const MQ_BOOKING_UPDATED_QUEUE    = "search-service.booking_updated";
+  await messageReceiver(channel, MQ_BOOKING_UPDATED_EXCHANGE, MQ_BOOKING_UPDATED_QUEUE, tables.updateBooking);
 }
 
 tables.createTable(db);
