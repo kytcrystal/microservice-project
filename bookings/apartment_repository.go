@@ -17,7 +17,7 @@ type Apartment struct {
 var apartmentDB *sqlx.DB = ConnectToBookingDatabase()
 
 var apartmentSchema = `
-DROP TABLE IF EXISTS apartments;
+DROP TABLE IF EXISTS apartments CASCADE;
 
 CREATE TABLE IF NOT EXISTS apartments (
 	id uuid primary key,

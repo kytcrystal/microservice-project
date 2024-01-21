@@ -50,7 +50,7 @@ func ConnectToDatabase() (*sqlx.DB, error) {
 	DROP TABLE IF EXISTS apartments;
 
 	CREATE TABLE IF NOT EXISTS apartments (
-		id uuid primary key DEFAULT gen_random_uuid(),
+		id uuid primary key,
 		apartment_name text,
 		address text,
 		noise_level text,
@@ -59,9 +59,13 @@ func ConnectToDatabase() (*sqlx.DB, error) {
 	db.MustExec(schema)
 
 	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Always Green", "Bolzano", "2", "3")
-	tx.MustExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES ($1, $2, $3, $4)", "Rarely Yellow", "Bolzano", "4", "3")
-	tx.NamedExec("INSERT INTO apartments (apartment_name, address, noise_level, floor) VALUES (:apartment_name, :address, :noise_level, :floor)", &Apartment{"0", "Sometimes Pink", "Merano", "1", "5"})
+	tx.MustExec(`INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
+		VALUES ($1, $2, $3, $4, $5)`, "d7675c3b-b97e-45a3-87a8-80b46b4d1162", "Always Green", "Bolzano", "2", "3")
+	tx.MustExec(`INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
+		VALUES ($1, $2, $3, $4, $5)`, "e03e3889-0018-4a59-bde0-b63f8751a932", "Rarely Yellow", "Bolzano", "4", "2")
+	tx.NamedExec(`INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
+		VALUES (:id, :apartment_name, :address, :noise_level, :floor)`,
+		&Apartment{"9953e906-8c49-4237-bf53-7fc530518d88", "Sometimes Pink", "Merano", "1", "5"})
 	tx.Commit()
 
 	if err := db.Ping(); err != nil {
@@ -72,8 +76,11 @@ func ConnectToDatabase() (*sqlx.DB, error) {
 }
 
 func (a *ApartmentRepository) SaveApartment(apartment Apartment) Apartment {
-	apartment.Id = uuid.NewString()
-	_, err := a.db.NamedExec("INSERT INTO apartments (id, apartment_name, address, noise_level, floor) VALUES (:id, :apartment_name, :address, :noise_level, :floor)", &apartment)
+	if apartment.Id == "" {
+		apartment.Id = uuid.NewString()
+	}
+	_, err := a.db.NamedExec(`INSERT INTO apartments (id, apartment_name, address, noise_level, floor) 
+		VALUES (:id, :apartment_name, :address, :noise_level, :floor)`, &apartment)
 	if err != nil {
 		log.Fatalln(err)
 	}

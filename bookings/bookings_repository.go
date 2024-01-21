@@ -25,10 +25,11 @@ DROP TABLE IF EXISTS bookings;
 
 CREATE TABLE IF NOT EXISTS bookings (
 	id uuid primary key,
-    apartment_id uuid,
-    user_id text,
+	apartment_id uuid,
+	user_id text,
 	start_date text,
-	end_date text
+	end_date text,
+	FOREIGN KEY (apartment_id) REFERENCES apartments(id) ON DELETE CASCADE ON UPDATE CASCADE
 );`
 
 func CreateBooking(booking Booking) (*Booking, error) {

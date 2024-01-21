@@ -16,6 +16,7 @@
   - [X] When a new apartment is created, apartment service sends a rabbit mq message, booking service listen and create the apartment in it's own DB too
 
 - [X] Booking post event to another queue (booking added, changed and cancelled)
+- [ ] Booking to post events into exchange
 
 - [ ] Search service -> javascript
   - [X] needs to have a DB with apartments
@@ -23,9 +24,9 @@
   - [X] needs to know which apartment exists and are available
   - [X] should be able to search apartments using "from" date and "to" date
   - [ ] register for booking events
-  - [ ] register for apartment events
-  - [ ] Direct call from Search service to Apartment service, if apartments table is empty
-  - [ ] Direct call from Search service to Booking service, if bookings table is empty
+  - [X] register for apartment events
+  - [X] Direct call from Search service to Apartment service, if apartments table is empty
+  - [X] Direct call from Search service to Booking service, if bookings table is empty
   
 - [ ] Dockerize applications
   - [x] Apartments
@@ -35,11 +36,11 @@
   - [X] Configuration for yaml file for Gateway
 - [ ] Implement event sourcing for Booking service
 - [ ] Implement NoSQL DB for apartments DB
-- [ ] Docker multistage build
+- [X] Docker multistage build
   - [X] Gateway
-  - [ ] Apartments
-  - [ ] Bookings
-- [ ] In apartment, when adding new apartment, can check if id is passed in correctly. If yes, use that. If not, generate new UUID
+  - [X] Apartments
+  - [X] Bookings
+- [X] In apartment, when adding new apartment, can check if id is passed in correctly. If yes, use that. If not, generate new UUID
 - [ ] Ensure error messages are set as JSON
 
 ## Requirements
