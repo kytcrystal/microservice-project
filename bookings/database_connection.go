@@ -49,7 +49,7 @@ func refreshApartmentTable(db *sqlx.DB) {
 
 	var apartmentList []Apartment
 	if err = json.NewDecoder(response.Body).Decode(&apartmentList); err != nil {
-		log.Fatalf("fail to unmarshal apartment list: %w", err)
+		log.Fatalf("fail to unmarshal apartment list: %v", err)
 	}
 
 	tx := db.MustBegin()
