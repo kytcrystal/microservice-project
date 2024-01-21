@@ -15,7 +15,12 @@ type Application struct {
 }
 
 func NewApplication() (*Application, error) {
-	apartmentPublisher, err := NewPublisher(MQ_CONNECTION_STRING)
+	apartmentPublisher, err := NewPublisher(
+		MQ_CONNECTION_STRING, 
+		MQ_BOOKING_CREATED_EXCHANGE,
+		MQ_BOOKING_UPDATED_EXCHANGE,
+		MQ_BOOKING_CANCELLED_EXCHANGE,
+	)
 	if err != nil {
 		log.Println("[NewApplication] failed to setup rabbit mq publisher: will retry when first message is sent", err)
 		apartmentPublisher = &RetryPublisher{}
