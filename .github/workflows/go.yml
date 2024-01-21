@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  build:
+  build-apartments:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -24,14 +24,34 @@ jobs:
     - name: Build Apartments
       run: go build -v ./apartments/...
 
-    - name: Test Appartments
+    - name: Test Apartments
       run: go test -v ./apartments/...
-    
+  
+  build-bookings:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.4'
+
     - name: Build Bookings
       run: go build -v ./bookings/...
 
     - name: Test Bookings
       run: go test -v ./bookings/...
+  
+  build-gateway:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.4'
   
     - name: Build Gateway
       run: go build -v ./gateway/...
