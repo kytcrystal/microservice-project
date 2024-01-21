@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -25,7 +24,7 @@ var bookingSchema = `
 DROP TABLE IF EXISTS bookings;
 
 CREATE TABLE IF NOT EXISTS bookings (
-	id uuid primary key DEFAULT gen_random_uuid(),
+	id uuid primary key,
     apartment_id uuid,
     user_id text,
 	start_date text,
@@ -62,12 +61,11 @@ func CreateBooking(booking Booking) (*Booking, error) {
 }
 
 func SaveBooking(booking Booking) Booking {
-	booking.ID = uuid.NewString()
 	_, err := bookingDB.NamedExec("INSERT INTO bookings (id, apartment_id, user_id, start_date, end_date) VALUES (:id, :apartment_id, :user_id, :start_date, :end_date)", &booking)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("[booking-CancelBooking] booking saved: %v\n", booking)
+	log.Printf("[booking-SaveBooking] booking saved: %v\n", booking)
 	return booking
 }
 
