@@ -41,17 +41,18 @@ func ConnectToBookingDatabase() *sqlx.DB {
 }
 
 func refreshApartmentTable(db *sqlx.DB) {
-	tx := db.MustBegin()
-
 	response, err := http.Get(APARTMENT_URL + "/api/apartments")
 	if err != nil {
-		log.Fatalf("fail to connect: %w", err)
+		log.Println("[refresh_apartment_table] failed to reach appartment service for table refresh, skip but investigate", err)
+		return
 	}
+
 	var apartmentList []Apartment
 	if err = json.NewDecoder(response.Body).Decode(&apartmentList); err != nil {
 		log.Fatalf("fail to unmarshal apartment list: %w", err)
 	}
 
+	tx := db.MustBegin()
 	for _, apt := range apartmentList {
 		tx.NamedExec(`INSERT INTO apartments (id, apartment_name) 
 			VALUES (:id, :apartment_name)`, 
