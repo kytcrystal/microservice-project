@@ -17,11 +17,12 @@ type Application struct {
 func NewApplication() (*Application, error) {
 	apartmentPublisher, err := NewPublisher(MQ_CONNECTION_STRING)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize rabbit mq: %w", err)
+		log.Println("[NewApplication] failed to setup rabbit mq publisher: will retry when first message is sent", err)
+		apartmentPublisher = &RetryPublisher{}
 	}
 
 	return &Application{
-		publisher: *apartmentPublisher,
+		publisher: apartmentPublisher,
 		ServeMux:  http.DefaultServeMux,
 	}, nil
 }
@@ -53,7 +54,7 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 		if err != nil {
 			return nil, err
 		}
-		err = a.publisher.SendMessage("booking_created", BookingCreatedEvent{bookingCreated})
+		err = a.publisher.SendMessage(MQ_BOOKING_CREATED_EXCHANGE, BookingCreatedEvent{bookingCreated})
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +68,7 @@ func (a *Application) bookingsHandler(w http.ResponseWriter, r *http.Request) (a
 		if err := CancelBooking(body.ID); err != nil {
 			return nil, err
 		}
-		err = a.publisher.SendMessage("booking_cancelled", BookingCancelledEvent{body.ID})
+		err = a.publisher.SendMessage(MQ_BOOKING_CANCELLED_EXCHANGE, BookingCancelledEvent{body.ID})
 		if err != nil {
 			return nil, err
 		}
