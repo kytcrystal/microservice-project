@@ -34,7 +34,7 @@
   - [X] Search
   - [X] Gateway
   - [X] Configuration for yaml file for Gateway
-- [ ] Implement event sourcing for Booking service
+- [X] Implement event sourcing for Booking service
 - [ ] Implement NoSQL DB for apartments DB
 - [X] Docker multistage build
   - [X] Gateway
