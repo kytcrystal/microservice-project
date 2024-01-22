@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,28 +15,28 @@ func TestBookingService(t *testing.T) {
 		var repo, err = NewRepository()
 		assert.NoError(t, err)
 
-		var apartmentID = uuid.NewString()
+		var apartmentId = uuid.NewString()
 
 		var apartmentCreatedEvent = ApartmentCreatedEvent{
-			ApartmentID:   apartmentID,
+			ApartmentID:   apartmentId,
 			ApartmentName: "Test Name",
 		}
 
-		err = repo.SaveEvent(context.Background(), apartmentID, apartmentCreatedEvent)
+		err = repo.SaveEvent(context.Background(), apartmentId, apartmentCreatedEvent)
 		assert.NoError(t, err)
 
 		var event = BookingCreatedEvent{
 			BookingID:   uuid.NewString(),
-			ApartmentID: apartmentID,
+			ApartmentID: apartmentId,
 			UserID:      uuid.NewString(),
 			StartDate:   "2023-01-02",
 			EndDate:     "2023-01-05",
 		}
 
-		err = repo.SaveEvent(context.Background(), apartmentID, event)
+		err = repo.SaveEvent(context.Background(), apartmentId, event)
 		assert.NoError(t, err)
 
-		entity, err := repo.Load(context.Background(), apartmentID)
+		entity, err := repo.Load(context.Background(), apartmentId)
 		assert.NoError(t, err)
 
 		assert.NotNil(t, entity)
@@ -55,7 +56,7 @@ func TestBookingService(t *testing.T) {
 		var repo, err = NewRepository()
 		assert.NoError(t, err)
 
-		var apartmentID = uuid.NewString()
+		var apartmentId = uuid.NewString()
 
 		var service = Service{
 			repo: *repo,
@@ -63,11 +64,11 @@ func TestBookingService(t *testing.T) {
 
 		var bookingId = uuid.NewString()
 
-		err = service.CreateApartment(context.Background(), apartmentID, uuid.NewString())
+		err = service.CreateApartment(context.Background(), apartmentId, uuid.NewString())
 		assert.NoError(t, err)
 
 		err = service.AddBooking(context.Background(),
-			apartmentID,      // apartmentId
+			apartmentId,      // apartmentId
 			uuid.NewString(), // userId
 			bookingId,        // bookingId
 			"2023-01-02",     // startDate
@@ -75,11 +76,11 @@ func TestBookingService(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		entity, err := repo.Load(context.Background(), apartmentID)
+		entity, err := repo.Load(context.Background(), apartmentId)
 		assert.NoError(t, err)
 
 		assert.NotNil(t, entity)
-		assert.Equal(t, apartmentID, entity.ApartmentID)
+		assert.Equal(t, apartmentId, entity.ApartmentID)
 		assert.NotEmpty(t, entity.Name)
 
 		assert.Len(t, entity.Bookings, 1)
@@ -91,7 +92,7 @@ func TestBookingService(t *testing.T) {
 		var repo, err = NewRepository()
 		assert.NoError(t, err)
 
-		var apartmentID = uuid.NewString()
+		var apartmentId = uuid.NewString()
 
 		var service = Service{
 			repo: *repo,
@@ -99,11 +100,11 @@ func TestBookingService(t *testing.T) {
 
 		var bookingId = uuid.NewString()
 
-		err = service.CreateApartment(context.Background(), apartmentID, uuid.NewString())
+		err = service.CreateApartment(context.Background(), apartmentId, uuid.NewString())
 		assert.NoError(t, err)
 
 		err = service.AddBooking(context.Background(),
-			apartmentID,      // apartmentId
+			apartmentId,      // apartmentId
 			uuid.NewString(), // userId
 			bookingId,        // bookingId
 			"2023-01-02",     // startDate
@@ -111,12 +112,12 @@ func TestBookingService(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		entity, err := repo.Load(context.Background(), apartmentID)
+		entity, err := repo.Load(context.Background(), apartmentId)
 		assert.NoError(t, err)
 		assert.Len(t, entity.Bookings, 1)
 
 		err = service.AddBooking(context.Background(),
-			apartmentID,      // apartmentId
+			apartmentId,      // apartmentId
 			uuid.NewString(), // userId
 			uuid.NewString(), // bookingId
 			"2023-02-02",     // startDate
@@ -124,7 +125,7 @@ func TestBookingService(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		entity, err = repo.Load(context.Background(), apartmentID)
+		entity, err = repo.Load(context.Background(), apartmentId)
 		assert.NoError(t, err)
 		assert.Len(t, entity.Bookings, 2)
 
@@ -133,11 +134,52 @@ func TestBookingService(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		entity, err = repo.Load(context.Background(), apartmentID)
+		entity, err = repo.Load(context.Background(), apartmentId)
 		assert.NoError(t, err)
 		assert.Len(t, entity.Bookings, 1)
 		assert.Equal(t, bookingId, entity.Bookings[0].BookingID)
 
+	})
+
+	t.Run("service should not allow booking if apartment is not available", func(t *testing.T) {
+		var repo, err = NewRepository()
+		assert.NoError(t, err)
+
+		var apartmentId = uuid.NewString()
+
+		var service = Service{
+			repo: *repo,
+		}
+
+		var bookingId = uuid.NewString()
+
+		err = service.CreateApartment(context.Background(), apartmentId, uuid.NewString())
+		assert.NoError(t, err)
+
+		err = service.AddBooking(context.Background(),
+			apartmentId,      // apartmentId
+			uuid.NewString(), // userId
+			bookingId,        // bookingId
+			"2023-01-02",     // startDate
+			"2023-01-05",     // endDate
+		)
+		assert.NoError(t, err)
+
+		entity, err := repo.Load(context.Background(), apartmentId)
+		assert.NoError(t, err)
+		assert.Len(t, entity.Bookings, 1)
+
+		err = service.AddBooking(context.Background(),
+			apartmentId,      // apartmentId
+			uuid.NewString(), // userId
+			uuid.NewString(), // bookingId
+			"2023-01-01",     // startDate
+			"2023-01-04",     // endDate
+		)
+		assert.Error(t, err, errors.New("apartment not available for booking"))
+
+		entity, _ = repo.Load(context.Background(), apartmentId)
+		assert.Len(t, entity.Bookings, 1)
 	})
 
 	// t.Run("it should load allow to cancel a booking", func(t *testing.T) {

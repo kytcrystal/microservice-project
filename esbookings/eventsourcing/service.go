@@ -79,16 +79,16 @@ func (s *Service) AddBooking(
 	startDate string,
 	endDate string,
 ) error {
-	b, err := s.repo.Load(ctx, apartmentId)
+	a, err := s.repo.Load(ctx, apartmentId)
 	if err != nil {
 		return err
 	}
 
-	if err := b.CreateBooking(bookingId, apartmentId, userId, startDate, endDate); err != nil {
+	if err := a.CreateBooking(bookingId, apartmentId, userId, startDate, endDate); err != nil {
 		return err
 	}
 
-	if err := s.repo.Save(ctx, b); err != nil {
+	if err := s.repo.Save(ctx, a); err != nil {
 		return err
 	}
 	return nil

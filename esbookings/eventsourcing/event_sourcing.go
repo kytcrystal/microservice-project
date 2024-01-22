@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 // Event is a domain event marker.
@@ -60,16 +61,24 @@ type BookingEntity struct {
 // NewFromEvents is a helper method that creates a new ApartmentEntity
 // from a series of events.
 func NewFromEvents(events []Event) *ApartmentEntity {
-	b := &ApartmentEntity{}
+	a := &ApartmentEntity{}
 
 	for _, event := range events {
-		b.On(event, false)
+		a.On(event, false)
 	}
-	return b
+	return a
 }
 
-func (b *ApartmentEntity) CreateBooking(bookingID string, apartmentID string, userID string, startDate string, endDate string) error {
-	// check if apartment is available if yes emit the event otherwise raise error
+func (a *ApartmentEntity) CreateBooking(bookingID string, apartmentID string, userID string, startDate string, endDate string) error {
+
+	if (startDate > endDate) {
+		return errors.New("booking date range is invalid")
+	}
+
+	if err := a.CheckAvailable(bookingID, apartmentID, startDate, endDate); err != nil {
+		return err
+	}
+
 	booking := BookingCreatedEvent{
 		BookingID:   bookingID,
 		ApartmentID: apartmentID,
@@ -77,18 +86,39 @@ func (b *ApartmentEntity) CreateBooking(bookingID string, apartmentID string, us
 		StartDate:   startDate,
 		EndDate:     endDate,
 	}
-	b.raise(booking)
+	a.raise(booking)
 	return nil
 }
 
-func (b *ApartmentEntity) Update(bookingId string, startDate string, endDate string) error {
+func (a *ApartmentEntity) CheckAvailable(bookingID string, apartmentID string, startDate string, endDate string) error {
+
+	for _, booking := range a.Bookings {
+		if !booking.Cancelled {
+			if startDate >= booking.StartDate && endDate <= booking.EndDate {
+				return errors.New("apartment not available for booking")
+			}
+			if startDate >= booking.StartDate && startDate <= booking.EndDate {
+				return errors.New("apartment not available for booking")
+			}
+			if endDate >= booking.StartDate && endDate <= booking.EndDate {
+				return errors.New("apartment not available for booking")
+			}
+			if startDate <= booking.StartDate && endDate >= booking.EndDate {
+				return errors.New("apartment not available for booking")
+			}
+		}
+	}
+	return nil
+}
+
+func (a *ApartmentEntity) Update(bookingId string, startDate string, endDate string) error {
 	// check if apartment is available if yes emit the event otherwise raise error
 
 	// if b.Cancelled {
 	// 	return fmt.Errorf("booking %v is already cancelled", b.ID)
 	// }
 
-	b.raise(BookingUpdatedEvent{
+	a.raise(BookingUpdatedEvent{
 		BookingID: bookingId,
 		StartDate: startDate,
 		EndDate:   endDate,
@@ -96,12 +126,12 @@ func (b *ApartmentEntity) Update(bookingId string, startDate string, endDate str
 	return nil
 }
 
-func (b *ApartmentEntity) Cancel(bookingId string) error {
+func (a *ApartmentEntity) Cancel(bookingId string) error {
 	// if b.Cancelled {
 	// 	return fmt.Errorf("booking %v is already cancelled", b.ID)
 	// }
 
-	b.raise(BookingCancelledEvent{
+	a.raise(BookingCancelledEvent{
 		BookingID: bookingId,
 	})
 	return nil
@@ -143,16 +173,16 @@ func (a *ApartmentEntity) On(event Event, new bool) {
 }
 
 // Events returns the uncommitted events from the Booking aggregate.
-func (b ApartmentEntity) Events() []Event {
-	return b.changes
+func (a ApartmentEntity) Events() []Event {
+	return a.changes
 }
 
 // Version returns the last version of the aggregate before changes.
-func (b ApartmentEntity) Version() int {
-	return b.version
+func (a ApartmentEntity) Version() int {
+	return a.version
 }
 
-func (b *ApartmentEntity) raise(event Event) {
-	b.changes = append(b.changes, event)
-	b.On(event, true)
+func (a *ApartmentEntity) raise(event Event) {
+	a.changes = append(a.changes, event)
+	a.On(event, true)
 }
