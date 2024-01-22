@@ -26,7 +26,6 @@ npm-debug.log
 *.log
 *.lock
 node_modules/
-package-lock.json
 yarn.lock
 
 # OS generated files
