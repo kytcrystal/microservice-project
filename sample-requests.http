@@ -47,11 +47,19 @@ GET http://{{booking_service_url}}/api/bookings
 POST http://{{booking_service_url}}/api/bookings
 
 {
-    "id": "29ee8366-9e96-48a6-a5c6-d6f43d1482da",
+    "id": "39ee8366-9e96-48a6-a5c6-d6f43d1482da",
     "apartment_id": "82d2a161-1769-4b22-9dad-b6ac0a8048cf",
     "user_id": "M47730",
     "start_date": "2024-03-01",
     "end_date": "2024-03-02"
+}
+
+### Rollback Booking
+
+POST http://{{booking_service_url}}/api/rollback
+
+{
+    "bookingID": "29ee8366-9e96-48a6-a5c6-d6f43d1482da"
 }
 
 
